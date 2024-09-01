@@ -56,9 +56,9 @@ export default function NFCScanner(props: NFCScannerProps) {
         >
             <h1>Tap below to scan.</h1>
             <MdOutlinePageview color='black' size={128} />
-            <Button onClick={() => props.handleTagScan('abcdefg')} variant='contained' style={{ width: '150px' }}>
+            {/* <Button onClick={() => props.handleTagScan('abcdefg')} variant='contained' style={{ width: '150px' }}>
                 Test Scan
-            </Button>
+            </Button> */}
         </div>
     ) : (
         <div

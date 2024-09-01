@@ -19,6 +19,5 @@ DATABASE_URL="file:./dev.db"            # Database URL for caching in case of Wi
 
 1. Install rc522 library `pip install mfrc522-python`
 2. Install node libraries `npm install`
-3. Build the project `npm run build`
-   3.5. For development, run `npm run dev`, but this will have a huge memory footprint
+3. Build the project `npm run build` or run `npm run dev` for development
 4. Run the server `npm start`
