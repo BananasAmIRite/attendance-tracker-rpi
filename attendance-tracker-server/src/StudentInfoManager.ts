@@ -55,7 +55,6 @@ export default class StudentInfoManager {
                     range: this.sheetRange,
                 });
             } catch (err) {
-                console.log(err);
                 this.mode = 'OFFLINE';
                 return this.getStudentInfo(onlineQualifier, offlineQualifier);
             }
@@ -120,7 +119,6 @@ export default class StudentInfoManager {
 
             console.log(`Student id ${studentId} successfully linked to NFC id ${nfcId}`);
         } catch (err) {
-            console.log(err);
             this.mode = 'OFFLINE';
         }
     }

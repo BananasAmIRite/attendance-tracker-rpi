@@ -8,9 +8,10 @@ import NFCUploadScanner from '../components/NFCUploadScanner';
 import { Popper } from '@mui/base/Popper';
 import { Alert, CircularProgress, Snackbar } from '@mui/material';
 import { Navigate, useNavigate } from 'react-router';
+import { GlobalMessageContext } from '../App';
 
 export default function UserScanScreen() {
-    const [errorMessage, setErrorMessage] = useState('');
+    const { message, setMessage } = useContext(GlobalMessageContext);
 
     const [displayUser, setDisplayUser] = useState<true | false | 'LOADING'>(false);
     const [data, setData] = useState('');
@@ -33,7 +34,7 @@ export default function UserScanScreen() {
     };
 
     const showError = (err: string) => {
-        setErrorMessage(err);
+        setMessage(err);
     };
 
     const handleCodeScan = async (id: string) => {
@@ -57,36 +58,37 @@ export default function UserScanScreen() {
 
         const date = new Date();
 
-        postAttendanceEntry(id, date.toISOString()).then(async () => {
-            const dispStudentInfo: DisplayedStudentInfo = {
-                ...info,
-                scanTime: formatDate(date),
-            };
+        postAttendanceEntry(id, date.toISOString()).then(
+            async () => {
+                const dispStudentInfo: DisplayedStudentInfo = {
+                    ...info,
+                    scanTime: formatDate(date),
+                };
 
-            setStudentInfo(dispStudentInfo);
-            setDisplayUser(true);
+                setStudentInfo(dispStudentInfo);
+                setDisplayUser(true);
 
-            setLastId(id);
+                setLastId(id);
 
-            setTimeout(() => {
-                setDisplayUser(false);
-            }, 2000);
-        });
+                setTimeout(() => {
+                    setDisplayUser(false);
+                }, 2000);
+            },
+            () => {}
+        );
 
-        setErrorMessage('');
+        setMessage('');
     };
 
     const validateId = (id: string): boolean => !isNaN(parseInt(id));
 
     useEffect(() => {
-        (async () => {
-            loadStudentInfo();
-        })();
+        loadStudentInfo();
     }, []);
 
     return (
         <div style={{ width: '100%', height: '100%' }}>
-            <div style={{ position: 'absolute', zIndex: '-100', width: '100%', height: '100%' }}>
+            <div style={{ position: 'absolute', zIndex: '0', width: '100%', height: '100%' }}>
                 <NFCUploadScanner handleCodeScan={handleCodeScan} />
             </div>
             {displayUser === 'LOADING' ? (
@@ -114,13 +116,7 @@ export default function UserScanScreen() {
             ) : (
                 <></>
             )}
-            <Snackbar
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                open={errorMessage !== ''}
-                onClose={() => setErrorMessage('')}
-                message={errorMessage}
-                autoHideDuration={3000}
-            />
+
             <button
                 onClick={() => {
                     if (Date.now() - lastClickTime <= 10000) {
@@ -128,17 +124,24 @@ export default function UserScanScreen() {
                     }
                     setLastClickTime(Date.now());
                     if (clickCount === 3) {
-                        setErrorMessage('Hey, isriah :)');
+                        setMessage('Hey, isriah :)');
                     }
                     if (clickCount === 8) {
-                        setErrorMessage('Keep clicking!');
+                        setMessage('Keep clicking!');
                     }
                     if (clickCount >= 10) {
                         setClickCount(0);
                         navigate('/supersecretscreen');
                     }
                 }}
-                style={{ border: 'none', backgroundColor: 'white', width: '100px', height: '20px' }}
+                style={{
+                    border: 'none',
+                    backgroundColor: 'white',
+                    width: '100px',
+                    height: '20px',
+                    position: 'relative',
+                    zIndex: 1,
+                }}
             ></button>
         </div>
     );

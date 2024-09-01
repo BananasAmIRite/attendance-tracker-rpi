@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import {
     clearAttendanceCache,
     flushAttendanceCache,
@@ -6,11 +6,15 @@ import {
     isAttendanceOnline,
 } from '../server/Attendance';
 import { isStudentInfoOnline } from '../server/Student';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Snackbar } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import CacheList from '../components/CacheList';
 import { AttendanceEntry } from '../types/UserInfoTypes';
 import { ArrowBackIos } from '@mui/icons-material';
 import { useNavigate } from 'react-router';
+import { GlobalMessageContext } from '../App';
+import { LoadingButton } from '@mui/lab';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import PublishIcon from '@mui/icons-material/Publish';
 
 export default function CacheScreen() {
     const [attendanceOnline, setAttendanceOnline] = useState(false);
@@ -18,13 +22,16 @@ export default function CacheScreen() {
 
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
-    const [message, setMessage] = useState('');
+    const [attendanceUploadLoading, setAttendanceUploadLoading] = useState(false);
+    const [attendanceDeleteLoading, setAttendanceDeleteLoading] = useState(false);
+
+    const { message, setMessage } = useContext(GlobalMessageContext);
 
     const navigate = useNavigate();
 
     useEffect(() => {
-        isAttendanceOnline().then(setAttendanceOnline);
-        isStudentInfoOnline().then(setStudentInfoOnline);
+        isAttendanceOnline().then(setAttendanceOnline, () => {});
+        isStudentInfoOnline().then(setStudentInfoOnline, () => {});
     }, []);
 
     const onlineStatusText = (isOnline: boolean) => {
@@ -33,11 +40,6 @@ export default function CacheScreen() {
         ) : (
             <span style={{ color: 'red' }}>Offline</span>
         );
-    };
-
-    const showMessage = (error: string) => {
-        // if (error === '') return;
-        setMessage(error);
     };
 
     return (
@@ -87,22 +89,30 @@ export default function CacheScreen() {
                             marginTop: '5%',
                         }}
                     >
-                        <Button
+                        <LoadingButton
+                            loading={attendanceUploadLoading}
+                            loadingPosition='start'
+                            startIcon={<PublishIcon />}
                             color='primary'
                             variant='contained'
-                            onClick={async () =>
+                            onClick={async () => {
+                                setAttendanceUploadLoading(true);
                                 flushAttendanceCache()
-                                    .then(() => {
-                                        showMessage('Uploaded Attendance Successfully!');
-                                    })
-                                    .catch((err) => {
-                                        showMessage(`Error: ${err}`);
-                                    })
-                            }
+                                    .then(
+                                        () => {
+                                            setMessage('Uploaded Attendance Successfully!');
+                                        },
+                                        () => {}
+                                    )
+                                    .finally(() => setAttendanceUploadLoading(false));
+                            }}
                         >
                             Upload Attendance Cache
-                        </Button>
-                        <Button
+                        </LoadingButton>
+                        <LoadingButton
+                            loading={attendanceDeleteLoading}
+                            loadingPosition='start'
+                            startIcon={<DeleteForeverIcon />}
                             variant='contained'
                             color='error'
                             onClick={() => {
@@ -110,7 +120,7 @@ export default function CacheScreen() {
                             }}
                         >
                             Delete Attendance Cache
-                        </Button>
+                        </LoadingButton>
                     </div>
                 </div>
             </div>
@@ -123,9 +133,15 @@ export default function CacheScreen() {
                     <Button
                         onClick={() => {
                             setDeleteConfirmOpen(false);
-                            clearAttendanceCache().then(() => {
-                                showMessage('Cleared all attendance cache');
-                            });
+                            setAttendanceDeleteLoading(true);
+                            clearAttendanceCache()
+                                .then(
+                                    () => {
+                                        setMessage('Cleared all attendance cache');
+                                    },
+                                    () => {}
+                                )
+                                .finally(() => setAttendanceDeleteLoading(false));
                         }}
                     >
                         Yes
@@ -135,7 +151,6 @@ export default function CacheScreen() {
                     </Button>
                 </DialogActions>
             </Dialog>
-            <Snackbar open={message !== ''} autoHideDuration={5000} onClose={() => setMessage('')} message={message} />
         </>
     );
 }

@@ -39,14 +39,18 @@ export default class AttendanceManager {
     }
 
     private async postOnlineAttendanceEntry(studentId: string, date: string, time: string) {
-        await SheetInstance.spreadsheets.values.append({
-            spreadsheetId: this.sheetId,
-            range: this.sheetRange,
-            valueInputOption: 'RAW',
-            requestBody: {
-                values: [[studentId, date, time]],
-            },
-        });
+        try {
+            await SheetInstance.spreadsheets.values.append({
+                spreadsheetId: this.sheetId,
+                range: this.sheetRange,
+                valueInputOption: 'RAW',
+                requestBody: {
+                    values: [[studentId, date, time]],
+                },
+            });
+        } catch (err: any) {
+            throw err;
+        }
     }
 
     public async getAttendanceEntries(studentId: string) {
@@ -92,15 +96,16 @@ export default class AttendanceManager {
     }
 
     public async flushCachedAttendance() {
-        try {
-            const entries = await this.getCachedAttendance();
-            for (const entry of entries) {
-                this.postOnlineAttendanceEntry(entry.studentId, entry.date, entry.time);
+        // throw new Error('nah nah nah boo boo');
+        const entries = await this.getCachedAttendance();
+        for (const entry of entries) {
+            try {
+                await this.postOnlineAttendanceEntry(entry.studentId, entry.date, entry.time);
+            } catch (err) {
+                throw err;
             }
-            this.clearAttendanceCache();
-        } catch (err) {
-            throw err;
         }
+        await this.clearAttendanceCache();
     }
 
     private async addCacheEntry(entry: AttendanceEntry) {

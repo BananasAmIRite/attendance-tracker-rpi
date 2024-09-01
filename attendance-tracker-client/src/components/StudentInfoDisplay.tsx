@@ -20,6 +20,8 @@ export default function StudentInfoDisplay(props: StudentInfoProps) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: 'white',
+                zIndex: 100,
+                position: 'absolute',
             }}
         >
             <FaCheckCircle color='green' size={128} />

@@ -18,7 +18,7 @@ export default function NFCScanner(props: NFCScannerProps) {
         socket.removeAllListeners();
         if (scannerState === 'SCANNING') {
             socket.on('tag', (tag) => {
-                console.log('received tag, ', tag);
+                console.log('Received tag, ', tag);
                 props.handleTagScan(tag);
             });
         }

@@ -1,0 +1,16 @@
+services:
+    frontend:
+        depends_on:
+            - backend
+        build:
+            context: ./attendance-tracker-client
+            dockerfile: Dockerfile
+        ports:
+            - 3000:3000
+
+    backend:
+        build:
+            context: ./attendance-tracker-server
+            dockerfile: Dockerfile
+        ports:
+            - 8080:8080

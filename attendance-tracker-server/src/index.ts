@@ -1,6 +1,6 @@
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import express from 'express';
+import express, { Response, Request } from 'express';
 import AttendanceManager from './AttendanceManager';
 import StudentInfoManager from './StudentInfoManager';
 import { createServer } from 'http';
@@ -25,6 +25,14 @@ app.use(
 );
 app.use(bodyParser.json());
 
+const handleErrors = (err: any, req: Request, res: Response, next: (err: any) => void) => {
+    console.error('error occurred: ', err.message);
+    if (res.headersSent) {
+        return next(err);
+    }
+    res.status(500).json({ error: err.message }).end();
+};
+
 const attdManager = new AttendanceManager();
 const siManager = new StudentInfoManager();
 
@@ -39,7 +47,7 @@ app.get('/studentInfo/sid', async (req, res) => {
 
     const info = await siManager.getStudentInfoBySID(id as string);
 
-    res.status(info ? 200 : 400)
+    res.status(info ? 200 : 404)
         .send(info)
         .end();
 });
@@ -49,7 +57,7 @@ app.get('/studentInfo/nfc', async (req, res) => {
     console.log('Student info by NFC ID: ', id);
     const info = await siManager.getStudentInfoByNFCID(id as string);
 
-    res.status(info ? 200 : 400)
+    res.status(info ? 200 : 404)
         .send(info)
         .end();
 });
@@ -106,14 +114,14 @@ app.post('/attendance/push', async (req, res) => {
     res.status(200).end();
 });
 
-app.post('/attendance/cache/flush', async (req, res) => {
+app.post('/attendance/cache/flush', async (req, res, next) => {
     console.log('Flushing attendance...');
-    try {
-        await attdManager.flushCachedAttendance();
-        res.status(200).end();
-    } catch (err: any) {
-        res.status(501).send(err.message).end();
-    }
+    attdManager
+        .flushCachedAttendance()
+        .then(() => {
+            res.status(200).end();
+        })
+        .catch(next);
 });
 
 app.get('/attendance/cache', async (req, res) => {
@@ -128,7 +136,9 @@ app.post('/attendance/cache/clear', async (req, res) => {
     res.status(200).end();
 });
 
-const rfidProcess = spawn('python', ['./rfid/rfid.py']);
+app.use(handleErrors);
+
+const rfidProcess = spawn('python3', ['./rfid/rfid.py']);
 rfidProcess.stdout.on('data', (data) => {
     socketIO.emit('tag', data.toString());
     console.log('RFID Data received: ', data.toString());

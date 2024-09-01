@@ -13,13 +13,13 @@ export const getAttendanceCache = async () => {
 };
 
 export const flushAttendanceCache = async () => {
-    await axios.post('/attendance/cache/flush');
+    return await axios.post('/attendance/cache/flush');
 };
 
 export const clearAttendanceCache = async () => {
-    await axios.post('/attendance/cache/clear');
+    return await axios.post('/attendance/cache/clear');
 };
 
 export const isAttendanceOnline = async () => {
-    return (await axios.get<boolean>('/attendance/online')).data;
+    return (await axios.get<{ online: boolean }>('/attendance/online')).data.online;
 };
