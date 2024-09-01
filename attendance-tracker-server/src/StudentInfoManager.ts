@@ -62,9 +62,6 @@ export default class StudentInfoManager {
 
             const values = response.data.values;
 
-            console.log('values');
-            console.log(values);
-
             if (values) {
                 for (const row of values) {
                     if (onlineQualifier(row)) return rowToStudentInfo(row);
@@ -102,9 +99,6 @@ export default class StudentInfoManager {
                 this.studentInfoCache.push(rowToStudentInfo(row));
             }
         }
-
-        console.log('loaded student info into cache...');
-        console.log(this.studentInfoCache);
     }
 
     public async bindStudentId(studentId: string, nfcId: string) {

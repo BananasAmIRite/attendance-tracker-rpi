@@ -28,10 +28,6 @@ app.use(bodyParser.json());
 const attdManager = new AttendanceManager();
 const siManager = new StudentInfoManager();
 
-(async () => {
-    console.log(await siManager.getStudentInfoBySID('Jason'));
-})();
-
 server.listen(8080, () => {
     console.log(`listening on *:8080`);
 });
@@ -39,11 +35,9 @@ server.listen(8080, () => {
 app.get('/studentInfo/sid', async (req, res) => {
     const { id } = req.query;
 
-    console.log(id);
+    console.log('Student info by ID: ', id);
 
     const info = await siManager.getStudentInfoBySID(id as string);
-
-    console.log(info);
 
     res.status(info ? 200 : 400)
         .send(info)
@@ -52,10 +46,8 @@ app.get('/studentInfo/sid', async (req, res) => {
 
 app.get('/studentInfo/nfc', async (req, res) => {
     const { id } = req.query;
-    console.log(id);
+    console.log('Student info by NFC ID: ', id);
     const info = await siManager.getStudentInfoByNFCID(id as string);
-
-    console.log(info);
 
     res.status(info ? 200 : 400)
         .send(info)
@@ -64,6 +56,8 @@ app.get('/studentInfo/nfc', async (req, res) => {
 
 app.post('/studentInfo/bind', async (req, res) => {
     const { studentId, nfcId } = req.body;
+
+    console.log('Binding Student with NFC: ', studentId, nfcId);
 
     try {
         await siManager.bindStudentId(studentId, nfcId);
@@ -74,6 +68,7 @@ app.post('/studentInfo/bind', async (req, res) => {
 });
 
 app.get('/studentInfo/load', async (req, res) => {
+    console.log('Loading student info...');
     await siManager.loadAllStudentInfo();
     res.status(200).end();
 });
@@ -94,6 +89,8 @@ app.get('/attendance/online', async (req, res) => {
 
 app.post('/attendance/push', async (req, res) => {
     const { studentId, dateTime } = req.body;
+
+    console.log('Pushing attendance: ', studentId, dateTime);
     const date = new Date(dateTime);
     const formatTwoDigits = (n: number) => {
         return n < 10 ? '0' + n : n;
@@ -110,7 +107,7 @@ app.post('/attendance/push', async (req, res) => {
 });
 
 app.post('/attendance/cache/flush', async (req, res) => {
-    console.log('flushing...');
+    console.log('Flushing attendance...');
     try {
         await attdManager.flushCachedAttendance();
         res.status(200).end();
@@ -120,11 +117,13 @@ app.post('/attendance/cache/flush', async (req, res) => {
 });
 
 app.get('/attendance/cache', async (req, res) => {
+    console.log('Getting attendance cache...');
     const entries = await attdManager.getAllCacheEntries();
     res.status(200).send(entries).end();
 });
 
 app.post('/attendance/cache/clear', async (req, res) => {
+    console.log('Clearing attendance cache...');
     await attdManager.clearAttendanceCache();
     res.status(200).end();
 });
@@ -132,13 +131,9 @@ app.post('/attendance/cache/clear', async (req, res) => {
 const rfidProcess = spawn('python', ['./rfid/rfid.py']);
 rfidProcess.stdout.on('data', (data) => {
     socketIO.emit('tag', data.toString());
-    console.log(data.toString());
+    console.log('RFID Data received: ', data.toString());
 });
 
-// read rfid (ws connection)
 socketIO.on('connection', (socket) => {
     console.log('socket connection established');
-    // socket.on('disconnect', () => {
-    //     rfidProcess.kill();
-    // });
 });

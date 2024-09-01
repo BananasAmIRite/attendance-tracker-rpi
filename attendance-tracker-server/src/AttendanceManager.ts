@@ -114,12 +114,10 @@ export default class AttendanceManager {
     }
 
     public async getAllCacheEntries(): Promise<Attendance[]> {
-        console.log('querying cache');
         return prisma.attendance.findMany();
     }
 
     public async clearAttendanceCache() {
-        console.log('clearing cache');
         await prisma.attendance.deleteMany({
             where: {},
         });

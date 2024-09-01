@@ -48,8 +48,6 @@ export default function UserScanScreen() {
         setDisplayUser('LOADING');
         const info: StudentInfo | null = await getStudentInfo(id);
 
-        console.log(info);
-
         if (!info) {
             // student doesnt exist
             showError('Student not found. Please scan again. ');
@@ -64,8 +62,6 @@ export default function UserScanScreen() {
                 ...info,
                 scanTime: formatDate(date),
             };
-
-            console.log('Posted entry');
 
             setStudentInfo(dispStudentInfo);
             setDisplayUser(true);
