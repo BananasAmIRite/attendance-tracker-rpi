@@ -1,13 +1,11 @@
 import { useState, useContext, useEffect } from 'react';
-import { DisplayedStudentInfo, STORE_KEYS, ScanType, StudentInfo } from '../types/UserInfoTypes';
+import { DisplayedStudentInfo, StudentInfo } from '../types/UserInfoTypes';
 import { getStudentInfo, loadStudentInfo } from '../server/Student';
 import { postAttendanceEntry } from '../server/Attendance';
-import NFCScanner from '../components/NFCScanner';
 import StudentInfoDisplay from '../components/StudentInfoDisplay';
 import NFCUploadScanner from '../components/NFCUploadScanner';
-import { Popper } from '@mui/base/Popper';
-import { Alert, CircularProgress, Snackbar } from '@mui/material';
-import { Navigate, useNavigate } from 'react-router';
+import CircularProgress from '@mui/material/CircularProgress';
+import { useNavigate } from 'react-router';
 import { GlobalMessageContext } from '../App';
 
 export default function UserScanScreen() {

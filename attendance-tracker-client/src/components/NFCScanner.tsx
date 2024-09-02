@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Socket } from 'socket.io-client';
 import { socket } from '../server/nfc';
-import { Button } from '@mui/material';
 import { MdOutlinePageview } from 'react-icons/md';
 import { MdOutlineCreditCardOff } from 'react-icons/md';
 import { MdOutlineCreditScore } from 'react-icons/md';
+import Button from '@mui/material/Button';
 
 export type NFCScannerState = 'OFF' | 'SCANNING' | 'SCANNING_DONE';
 export interface NFCScannerProps {

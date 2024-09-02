@@ -136,6 +136,14 @@ app.post('/attendance/cache/clear', async (req, res) => {
     res.status(200).end();
 });
 
+app.post('/getBackOnline', async (req, res) => {
+    attdManager.mode = 'ONLINE';
+    siManager.mode = 'ONLINE';
+    await siManager.loadAllStudentInfo();
+    await attdManager.testOnlineStatus();
+    res.status(200).end();
+});
+
 app.use(handleErrors);
 
 const rfidProcess = spawn('python3', ['./rfid/rfid.py']);

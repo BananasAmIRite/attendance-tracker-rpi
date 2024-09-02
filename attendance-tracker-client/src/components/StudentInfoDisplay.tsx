@@ -1,4 +1,3 @@
-import { StudentInfo } from '../types/UserInfoTypes';
 import { FaCheckCircle } from 'react-icons/fa';
 
 export interface StudentInfoProps {

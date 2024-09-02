@@ -19,5 +19,6 @@ DATABASE_URL="file:./dev.db"            # Database URL for caching in case of Wi
 
 1. Install rc522 library `pip install mfrc522-python`
 2. Install node libraries `npm install`
-3. Build the project `npm run build` or run `npm run dev` for development
-4. Run the server `npm start`
+3. Run `npx prisma db push` and `npx prisma generate` to set up the database
+4. Build the project `npm run build` or run `npm run dev` for development
+5. Run the server `npm start`

@@ -23,3 +23,7 @@ export const clearAttendanceCache = async () => {
 export const isAttendanceOnline = async () => {
     return (await axios.get<{ online: boolean }>('/attendance/online')).data.online;
 };
+
+export const getBackOnline = async () => {
+    return await axios.post('/getBackOnline');
+};

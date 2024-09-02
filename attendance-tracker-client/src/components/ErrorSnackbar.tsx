@@ -1,4 +1,4 @@
-import { Snackbar } from '@mui/material';
+import Snackbar from '@mui/material/Snackbar';
 import { useEffect, useState } from 'react';
 
 export default function MessageSnackbar(props: { message: { msg: string } }) {

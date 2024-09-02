@@ -1,20 +1,26 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useReducer, useState } from 'react';
 import {
     clearAttendanceCache,
     flushAttendanceCache,
     getAttendanceCache,
+    getBackOnline,
     isAttendanceOnline,
 } from '../server/Attendance';
 import { isStudentInfoOnline } from '../server/Student';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import IconButton from '@mui/material/IconButton';
 import CacheList from '../components/CacheList';
 import { AttendanceEntry } from '../types/UserInfoTypes';
 import { ArrowBackIos } from '@mui/icons-material';
 import { useNavigate } from 'react-router';
 import { GlobalMessageContext } from '../App';
-import { LoadingButton } from '@mui/lab';
+import LoadingButton from '@mui/lab/LoadingButton';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import PublishIcon from '@mui/icons-material/Publish';
+import DialogTitle from '@mui/material/DialogTitle';
 
 export default function CacheScreen() {
     const [attendanceOnline, setAttendanceOnline] = useState(false);
@@ -25,13 +31,19 @@ export default function CacheScreen() {
     const [attendanceUploadLoading, setAttendanceUploadLoading] = useState(false);
     const [attendanceDeleteLoading, setAttendanceDeleteLoading] = useState(false);
 
-    const { message, setMessage } = useContext(GlobalMessageContext);
+    const { setMessage } = useContext(GlobalMessageContext);
 
     const navigate = useNavigate();
+
+    const forceUpdate = () => {
+        navigate(0);
+    };
 
     useEffect(() => {
         isAttendanceOnline().then(setAttendanceOnline, () => {});
         isStudentInfoOnline().then(setStudentInfoOnline, () => {});
+
+        console.log('reloading???');
     }, []);
 
     const onlineStatusText = (isOnline: boolean) => {
@@ -67,6 +79,18 @@ export default function CacheScreen() {
                         <span>Attendance Online: {onlineStatusText(attendanceOnline)}</span>
                         <br />
                         <span>Student Info Online: {onlineStatusText(studentInfoOnline)}</span>
+                        <br /> <br />
+                        <Button
+                            variant='contained'
+                            onClick={() => {
+                                getBackOnline().then(() => {
+                                    forceUpdate();
+                                    console.log('force updating');
+                                });
+                            }}
+                        >
+                            Reload Status
+                        </Button>
                     </div>
 
                     <div style={{ marginTop: 30 }}>
@@ -101,6 +125,7 @@ export default function CacheScreen() {
                                     .then(
                                         () => {
                                             setMessage('Uploaded Attendance Successfully!');
+                                            forceUpdate();
                                         },
                                         () => {}
                                     )
@@ -138,6 +163,7 @@ export default function CacheScreen() {
                                 .then(
                                     () => {
                                         setMessage('Cleared all attendance cache');
+                                        forceUpdate();
                                     },
                                     () => {}
                                 )

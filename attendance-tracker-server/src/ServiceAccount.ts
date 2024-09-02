@@ -1,5 +1,5 @@
 import { JWT } from 'google-auth-library';
-import { google } from 'googleapis';
+import { sheets } from '@googleapis/sheets';
 import { config } from 'dotenv';
 config();
 
@@ -12,4 +12,4 @@ serviceAccountAuth.authorize().then((a) => {
     console.log('Authorized user. Access Token: ', a.access_token);
 });
 
-export const SheetInstance = google.sheets({ version: 'v4', auth: serviceAccountAuth });
+export const SheetInstance = sheets({ version: 'v4', auth: serviceAccountAuth });

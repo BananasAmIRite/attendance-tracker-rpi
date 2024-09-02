@@ -53,6 +53,21 @@ export default class AttendanceManager {
         }
     }
 
+    public async testOnlineStatus(): Promise<boolean> {
+        try {
+            let response = await SheetInstance.spreadsheets.values.get({
+                spreadsheetId: this.sheetId,
+                range: this.sheetRange,
+            });
+            this.mode = 'ONLINE';
+            return true;
+        } catch (err) {
+            console.log('oopsies error');
+            this.mode = 'OFFLINE';
+            return false;
+        }
+    }
+
     public async getAttendanceEntries(studentId: string) {
         if (this.mode === 'OFFLINE') return [];
         let response;

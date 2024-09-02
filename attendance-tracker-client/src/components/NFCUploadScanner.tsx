@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import NFCScanner from './NFCScanner';
 import { bindStudentId, getStudentInfo, getStudentInfoByNFCId } from '../server/Student';
-import { Button, TextField } from '@mui/material';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
 
 export interface NFCUploadScannerProps {
     handleCodeScan: (res: string) => void;

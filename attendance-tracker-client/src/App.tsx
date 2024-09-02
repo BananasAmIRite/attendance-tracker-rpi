@@ -1,5 +1,4 @@
-import React, { Dispatch, SetStateAction, createContext, useEffect, useState } from 'react';
-import logo from './logo.svg';
+import { createContext, useEffect, useState } from 'react';
 import './App.css';
 import UserScanScreen from './screens/UserScanScreen';
 import axios from 'axios';

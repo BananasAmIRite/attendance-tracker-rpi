@@ -1,7 +1,4 @@
-import { JWT } from 'google-auth-library';
-import { GoogleSpreadsheet } from 'google-spreadsheet';
 import { SheetInstance } from './ServiceAccount';
-import { google } from 'googleapis';
 
 export interface StudentInfo {
     studentId: string;
