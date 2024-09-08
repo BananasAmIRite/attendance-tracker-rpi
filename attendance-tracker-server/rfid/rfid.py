@@ -1,10 +1,6 @@
-# import mfrc522
-import time
-import sys
+import mfrc522
 
-# reader = mfrc522.SimpleMFRC522
+reader = mfrc522.SimpleMFRC522
 
 while (True):
-    # print(reader.read_id())
-    # print("hi", flush=True, end=None)
-    time.sleep(10)
+    print(reader.read_id(), flush=True, end="")
