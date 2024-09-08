@@ -7,9 +7,6 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { spawn } from 'child_process';
 
-const userSheetId = process.env.USER_SHEET_ID;
-const userSheetRange = process.env.USER_SHEET_RANGE;
-
 const app = express();
 const server = createServer(app);
 const socketIO = new Server(server, {
