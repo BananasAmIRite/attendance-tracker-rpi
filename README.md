@@ -9,3 +9,8 @@ Includes the following features:
 -   Automatic attendance cache in case of network blackout
 
 ### View the [Documentation](/docs/ABOUT-PROJECT.md)
+
+## Resources used:
+
+-   [RC522 Library Guide](https://pimylifeup.com/raspberry-pi-rfid-rc522/)
+-   [RPI Kiosk Mode Setup](https://www.raspberrypi.com/tutorials/how-to-use-a-raspberry-pi-in-kiosk-mode/)
