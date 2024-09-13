@@ -143,7 +143,8 @@ app.post('/getBackOnline', async (req, res) => {
 
 app.use(handleErrors);
 
-const rfidProcess = spawn('python3', ['./rfid/rfid.py']);
+console.log(`Running rfid script with python path: ${process.env.PYTHON_PATH}`);
+const rfidProcess = spawn(process.env.PYTHON_PATH as string, ['./rfid/rfid.py']);
 rfidProcess.stdout.on('data', (data) => {
     socketIO.emit('tag', data.toString());
     console.log('RFID Data received: ', data.toString());
