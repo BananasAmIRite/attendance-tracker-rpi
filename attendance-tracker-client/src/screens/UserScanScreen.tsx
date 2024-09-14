@@ -103,7 +103,7 @@ export default function UserScanScreen() {
                         alignItems: 'center',
                     }}
                 >
-                    <CircularProgress color='primary' size={128} />
+                    <CircularProgress color='primary' size={64} />
                 </div>
             ) : displayUser ? (
                 <StudentInfoDisplay

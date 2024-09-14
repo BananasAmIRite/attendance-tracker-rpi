@@ -23,14 +23,14 @@ export default function StudentInfoDisplay(props: StudentInfoProps) {
                 position: 'absolute',
             }}
         >
-            <FaCheckCircle color='green' size={128} />
+            <FaCheckCircle color='green' size={64} />
             <div>
                 <h1>{props.action === 'SCAN_IN' ? 'Welcome,' : 'Bye!'}</h1>
                 <h2>{props.name}</h2>
             </div>
             <h3>You've been marked {props.attendanceStatus === 'ABSENT' ? 'Absent' : 'Present'}</h3>
 
-            <h4 style={{ textAlign: 'center', marginTop: '2.5%', marginBottom: '2.5%' }}>Student ID: {props.id}</h4>
+            <h4 style={{ textAlign: 'center', marginTop: '1%', marginBottom: '1%' }}>Student ID: {props.id}</h4>
             <div>
                 <h4>Scanned in at {props.scanTime}</h4>
             </div>

@@ -38,19 +38,23 @@
 }
 
 h1 {
-    font-size: 64px;
+    font-size: 32px;
+    margin: 0.5%;
 }
 
 h2 {
-    font-size: 52px;
+    font-size: 26px;
+    margin: 0.5%;
 }
 
 h3 {
-    font-size: 32px;
+    font-size: 16px;
+    margin: 0.5%;
 }
 
 h4 {
-    font-size: 28px;
+    font-size: 14px;
+    margin: 0.5%;
 }
 
 * {

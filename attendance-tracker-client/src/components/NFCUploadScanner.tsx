@@ -118,7 +118,7 @@ export default function NFCUploadScanner(props: NFCUploadScannerProps) {
             }}
         >
             <h1>Received Tag. Processing...</h1>
-            <MdOutlineCreditScore size={128} color='black' />
+            <MdOutlineCreditScore size={64} color='black' />
         </div>
     ) : (
         <></>

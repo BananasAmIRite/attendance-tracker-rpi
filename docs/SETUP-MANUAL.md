@@ -22,5 +22,6 @@ sudo apt install npm
     - Add the environment variable `PYTHON_PATH` to `attendance-tracker-server` as `path/to/env/bin/python`
 
 4. Install node dependencies for client and server by running `npm install` inside `attendance-tracker-rpi/attendance-tracker-server` and `attendance-tracker-rpi/attendance-tracker-client`
-5. Navigate to `attendance-tracker-server` and `attendance-tracker-client` and run `npm run build` (NOTE: if you don't have enough memory to build, skip this step)
+5. Navigate to `attendance-tracker-server` and `attendance-tracker-client` and run `npm run build` (NOTE: if you don't have enough memory to build client, skip this step)
 6. Navigate to each folders and run `npm run start`
+7. Open a browser and go to `http://localhost:3000`
