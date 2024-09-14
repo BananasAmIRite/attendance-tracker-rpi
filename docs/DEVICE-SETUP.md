@@ -9,7 +9,7 @@
 
 ## Environment Setup
 
-1. [Install Raspberry PI OS](https://www.raspberrypi.com/documentation/computers/getting-started.html) on the Raspberry PI. Ensure SSH is enabled.
+1. [Install Raspberry PI OS](https://www.raspberrypi.com/documentation/computers/getting-started.html) on the Raspberry PI. Ensure SSH is enabled and the version is 64-bit.
 2. Connect the Raspberry PI to the touchscreen display
 3. Follow the below to wire the RC522 chip to the Raspberry PI:
 
