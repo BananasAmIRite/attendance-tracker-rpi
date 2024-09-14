@@ -13,7 +13,8 @@ export type UploadState = 'TAG_SCAN' | 'TAG_FIN' | 'INPUT_ID' | 'INPUT_FAILURE';
 
 export default function NFCUploadScanner(props: NFCUploadScannerProps) {
     const [uploadState, setUploadState] = useState<UploadState>('TAG_SCAN');
-    const [nfcId, setNfcId] = useState('');
+    const [scannedNfcId, setScannedNfcId] = useState(''); // used to ensure id isn't scanned twice
+    const [nfcId, setNfcId] = useState(''); // used to store the current nfc id to handle
     const [stdId, setStdId] = useState('');
 
     const uploadStateRef = useRef<UploadState>();
@@ -25,8 +26,10 @@ export default function NFCUploadScanner(props: NFCUploadScannerProps) {
 
     const handleTag = async (uid: string) => {
         if (uploadStateRef.current !== 'TAG_SCAN') return;
-        if (uid === nfcId) return;
+        if (uid === scannedNfcId) return;
         console.log('handling tag...');
+
+        setNfcId(uid);
 
         setUploadState('TAG_FIN');
 
@@ -57,7 +60,7 @@ export default function NFCUploadScanner(props: NFCUploadScannerProps) {
     const handleScan = async (nfcId: string, id: string) => {
         const val = await props.handleCodeScan(id);
         if (val) {
-            setNfcId(nfcId);
+            setScannedNfcId(nfcId);
         }
         resetToScan();
     };
