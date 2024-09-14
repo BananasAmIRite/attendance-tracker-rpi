@@ -8,9 +8,9 @@ Includes the following features:
 -   Upload to Google Sheets
 -   Automatic attendance cache in case of network blackout
 
-## Docker Instructions
-
--   Install Docker Desktop (https://www.docker.com/products/docker-desktop/)
--   Run `docker compose up` and go to http://localhost:3000/
-
 ### View the [Documentation](/docs/ABOUT-PROJECT.md)
+
+## Resources used:
+
+-   [RC522 Library Guide](https://pimylifeup.com/raspberry-pi-rfid-rc522/)
+-   [RPI Kiosk Mode Setup](https://www.raspberrypi.com/tutorials/how-to-use-a-raspberry-pi-in-kiosk-mode/)
