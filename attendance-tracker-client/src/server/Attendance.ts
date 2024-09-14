@@ -27,3 +27,13 @@ export const isAttendanceOnline = async () => {
 export const getBackOnline = async () => {
     return await axios.post('/getBackOnline');
 };
+
+export const queryPasswordCorrect = async (password: string) => {
+    return (
+        await axios.get<boolean>('/adminpanel/verify', {
+            params: {
+                password,
+            },
+        })
+    ).data;
+};

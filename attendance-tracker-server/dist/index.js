@@ -122,6 +122,13 @@ app.post('/getBackOnline', (req, res) => __awaiter(void 0, void 0, void 0, funct
     yield attdManager.testOnlineStatus();
     res.status(200).end();
 }));
+app.get('/adminpanel/verify', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { password } = req.query;
+    console.log('Admin Panel access: ', process.env.ADMIN_PANEL_PW, password);
+    res.status(200)
+        .send(process.env.ADMIN_PANEL_PW === password)
+        .end();
+}));
 app.use(handleErrors);
 console.log(`Running rfid script with python path: ${process.env.PYTHON_PATH}`);
 const rfidProcess = (0, child_process_1.spawn)(process.env.PYTHON_PATH, ['./rfid/rfid.py']);

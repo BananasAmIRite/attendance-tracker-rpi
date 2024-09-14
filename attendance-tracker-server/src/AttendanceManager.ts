@@ -62,7 +62,6 @@ export default class AttendanceManager {
             this.mode = 'ONLINE';
             return true;
         } catch (err) {
-            console.log('oopsies error');
             this.mode = 'OFFLINE';
             return false;
         }

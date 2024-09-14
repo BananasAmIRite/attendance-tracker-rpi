@@ -27,6 +27,7 @@
 | `ATTD_SHEET_RANGE`             | range of attendance sheet, containing data in order: id, date, time                                     |                 |
 | `DATABASE_URL`                 | Database URL for caching in case of WiFi blackout (relative to /prisma)                                 | "file:./dev.db" |
 | `PYTHON_PATH`                  | Path to the python installation's python executable; Fill this out in [Setup Manual](./SETUP-MANUAL.md) |                 |
+| `ADMIN_PANEL_PW`               | the password to access attendance caches                                                                | admin           |
 
 ## Configure Client
 

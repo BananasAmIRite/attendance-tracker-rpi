@@ -1,12 +1,19 @@
 import { useState, useContext, useEffect } from 'react';
 import { DisplayedStudentInfo, StudentInfo } from '../types/UserInfoTypes';
 import { getStudentInfo, loadStudentInfo } from '../server/Student';
-import { postAttendanceEntry } from '../server/Attendance';
+import { postAttendanceEntry, queryPasswordCorrect } from '../server/Attendance';
 import StudentInfoDisplay from '../components/StudentInfoDisplay';
 import NFCUploadScanner from '../components/NFCUploadScanner';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useNavigate } from 'react-router';
 import { GlobalMessageContext } from '../App';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import TextField from '@mui/material/TextField';
+import { DialogActions } from '@mui/material';
 
 export default function UserScanScreen() {
     const { message, setMessage } = useContext(GlobalMessageContext);
@@ -15,8 +22,7 @@ export default function UserScanScreen() {
     const [lastId, setLastId] = useState('');
     const [displayedStudentInfo, setStudentInfo] = useState<DisplayedStudentInfo | null>(null);
 
-    const [clickCount, setClickCount] = useState(0);
-    const [lastClickTime, setLastClickTime] = useState(Date.now());
+    const [adminDialogOpen, setAdminDialogOpen] = useState(false);
 
     const navigate = useNavigate();
 
@@ -116,8 +122,7 @@ export default function UserScanScreen() {
             ) : (
                 <></>
             )}
-
-            <button
+            {/* <button // so long super secret button :(
                 onClick={() => {
                     if (Date.now() - lastClickTime <= 10000) {
                         setClickCount((a) => a + 1);
@@ -142,7 +147,51 @@ export default function UserScanScreen() {
                     position: 'relative',
                     zIndex: 1,
                 }}
-            ></button>
+            ></button> */}{' '}
+            <Button
+                variant='contained'
+                onClick={() => {
+                    setAdminDialogOpen(true);
+                }}
+            >
+                Open Admin Panel
+            </Button>
+            <Dialog
+                open={adminDialogOpen}
+                onClose={() => setAdminDialogOpen(false)}
+                PaperProps={{
+                    component: 'form',
+                    onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
+                        event.preventDefault();
+                        const formData = new FormData(event.currentTarget);
+                        const formJson = Object.fromEntries((formData as any).entries());
+                        const pw = formJson.pw;
+                        setAdminDialogOpen(false);
+                        queryPasswordCorrect(pw).then((correct) => {
+                            if (correct) navigate('/supersecretscreen');
+                        });
+                    },
+                }}
+            >
+                <DialogTitle>Admin Panel</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        autoFocus
+                        required
+                        margin='dense'
+                        id='pw'
+                        name='pw'
+                        label='Password'
+                        type='text'
+                        fullWidth
+                        variant='standard'
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setAdminDialogOpen(false)}>Cancel</Button>
+                    <Button type='submit'>Open</Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 }

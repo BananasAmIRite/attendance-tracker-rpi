@@ -73,7 +73,6 @@ class AttendanceManager {
                 return true;
             }
             catch (err) {
-                console.log('oopsies error');
                 this.mode = 'OFFLINE';
                 return false;
             }
