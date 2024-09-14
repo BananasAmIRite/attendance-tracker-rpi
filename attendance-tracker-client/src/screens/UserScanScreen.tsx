@@ -12,7 +12,6 @@ export default function UserScanScreen() {
     const { message, setMessage } = useContext(GlobalMessageContext);
 
     const [displayUser, setDisplayUser] = useState<true | false | 'LOADING'>(false);
-    const [data, setData] = useState('');
     const [lastId, setLastId] = useState('');
     const [displayedStudentInfo, setStudentInfo] = useState<DisplayedStudentInfo | null>(null);
 
@@ -35,48 +34,51 @@ export default function UserScanScreen() {
         setMessage(err);
     };
 
-    const handleCodeScan = async (id: string) => {
-        setData(id);
-        if (!validateId(id)) return;
+    const handleCodeScan = (id: string) =>
+        new Promise<boolean>(async (res, rej) => {
+            console.log('handling code: ' + id);
+            if (!validateId(id)) return res(false);
 
-        if (displayUser) return; // disable barcode scanning when user is being displayed
-        if (id === lastId) {
-            showError('You already scanned!');
-            return;
-        }
-        setDisplayUser('LOADING');
-        const info: StudentInfo | null = await getStudentInfo(id);
+            console.log(displayUser, id, lastId);
+            if (displayUser && displayUser !== 'LOADING') return res(false); // disable scanning when user is being displayed
+            if (id === lastId) {
+                showError('You already scanned!');
+                return res(false);
+            }
+            setDisplayUser('LOADING');
+            const info: StudentInfo | null = await getStudentInfo(id);
 
-        if (!info) {
-            // student doesnt exist
-            showError('Student not found. Please scan again. ');
-            setDisplayUser(false);
-            return;
-        }
+            if (!info) {
+                // student doesnt exist
+                showError('Student not found. Please scan again. ');
+                setDisplayUser(false);
+                return res(false);
+            }
 
-        const date = new Date();
+            const date = new Date();
 
-        postAttendanceEntry(id, date.toISOString()).then(
-            async () => {
-                const dispStudentInfo: DisplayedStudentInfo = {
-                    ...info,
-                    scanTime: formatDate(date),
-                };
+            await postAttendanceEntry(id, date.toISOString()).then(
+                async () => {
+                    const dispStudentInfo: DisplayedStudentInfo = {
+                        ...info,
+                        scanTime: formatDate(date),
+                    };
 
-                setStudentInfo(dispStudentInfo);
-                setDisplayUser(true);
+                    setStudentInfo(dispStudentInfo);
+                    setDisplayUser(true);
 
-                setLastId(id);
+                    setLastId(id);
 
-                setTimeout(() => {
-                    setDisplayUser(false);
-                }, 2000);
-            },
-            () => {}
-        );
-
-        setMessage('');
-    };
+                    setTimeout(() => {
+                        setDisplayUser(false);
+                        return res(true);
+                    }, 2000);
+                },
+                () => {
+                    return res(false);
+                }
+            );
+        });
 
     const validateId = (id: string): boolean => !isNaN(parseInt(id));
 

@@ -1,26 +1,40 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import NFCScanner from './NFCScanner';
 import { bindStudentId, getStudentInfo, getStudentInfoByNFCId } from '../server/Student';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import { MdOutlineCreditScore } from 'react-icons/md';
 
 export interface NFCUploadScannerProps {
-    handleCodeScan: (res: string) => void;
+    handleCodeScan: (res: string) => Promise<boolean>;
 }
 
+export type UploadState = 'TAG_SCAN' | 'TAG_FIN' | 'INPUT_ID' | 'INPUT_FAILURE';
+
 export default function NFCUploadScanner(props: NFCUploadScannerProps) {
-    const [uploadState, setUploadState] = useState<'TAG_SCAN' | 'INPUT_ID' | 'INPUT_FAILURE'>('TAG_SCAN');
+    const [uploadState, setUploadState] = useState<UploadState>('TAG_SCAN');
     const [nfcId, setNfcId] = useState('');
     const [stdId, setStdId] = useState('');
 
+    const uploadStateRef = useRef<UploadState>();
+    uploadStateRef.current = uploadState;
+
+    const resetToScan = () => {
+        setUploadState('TAG_SCAN');
+    };
+
     const handleTag = async (uid: string) => {
-        setNfcId(uid);
+        if (uploadStateRef.current !== 'TAG_SCAN') return;
+        if (uid === nfcId) return;
+        console.log('handling tag...');
+
+        setUploadState('TAG_FIN');
 
         const studentInfo = await getStudentInfoByNFCId(uid);
         if (studentInfo) {
+            console.log('handling upload...');
             // student lookup successful
-            props.handleCodeScan(studentInfo.studentId);
-            setUploadState('TAG_SCAN');
+            await handleScan(uid, studentInfo.studentId);
         } else {
             // couldn't find student. create new profile
             setUploadState('INPUT_ID');
@@ -36,14 +50,21 @@ export default function NFCUploadScanner(props: NFCUploadScannerProps) {
             setUploadState('INPUT_FAILURE');
         } else {
             await bindStudentId(studentId, nfcId);
-            props.handleCodeScan(studentId);
-            setUploadState('TAG_SCAN');
+            await handleScan(nfcId, studentId);
         }
+    };
+
+    const handleScan = async (nfcId: string, id: string) => {
+        const val = await props.handleCodeScan(id);
+        if (val) {
+            setNfcId(nfcId);
+        }
+        resetToScan();
     };
 
     return uploadState === 'TAG_SCAN' ? (
         <>
-            <NFCScanner key='SCANNER' handleTagScan={handleTag} />
+            <NFCScanner handleTagScan={handleTag} />
         </>
     ) : uploadState === 'INPUT_ID' ? (
         <div
@@ -81,9 +102,23 @@ export default function NFCUploadScanner(props: NFCUploadScannerProps) {
             }}
         >
             <h2>Invalid or already used Student ID. Please try again. </h2>
-            <Button onClick={() => setUploadState('TAG_SCAN')} variant='contained'>
+            <Button onClick={() => resetToScan()} variant='contained'>
                 Try Again.{' '}
             </Button>
+        </div>
+    ) : uploadState === 'TAG_FIN' ? (
+        <div
+            style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}
+        >
+            <h1>Received Tag. Processing...</h1>
+            <MdOutlineCreditScore size={128} color='black' />
         </div>
     ) : (
         <></>

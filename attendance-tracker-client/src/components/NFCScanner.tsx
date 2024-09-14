@@ -1,47 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { socket } from '../server/nfc';
 import { MdOutlinePageview } from 'react-icons/md';
-import { MdOutlineCreditCardOff } from 'react-icons/md';
-import { MdOutlineCreditScore } from 'react-icons/md';
-import Button from '@mui/material/Button';
-
-export type NFCScannerState = 'OFF' | 'SCANNING' | 'SCANNING_DONE';
 export interface NFCScannerProps {
     handleTagScan: (tag: string) => void;
 }
 
 export default function NFCScanner(props: NFCScannerProps) {
-    const [scannerState, setScannerState] = useState<NFCScannerState>('SCANNING');
-
     useEffect(() => {
         socket.removeAllListeners();
-        if (scannerState === 'SCANNING') {
-            socket.on('tag', (tag) => {
-                console.log('Received tag, ', tag);
-                props.handleTagScan(tag);
-            });
-        }
-    }, [scannerState]);
-
-    useEffect(() => {
-        setScannerState('SCANNING');
+        socket.on('tag', async (tag) => {
+            console.log('Received tag, ', tag);
+            props.handleTagScan(tag);
+        });
     }, []);
 
-    return scannerState === 'OFF' ? (
-        <div
-            style={{
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-            }}
-        >
-            <MdOutlineCreditCardOff size={128} color='black' />
-            <h1>Scanner Off. Tap to turn on</h1>
-        </div>
-    ) : scannerState === 'SCANNING' ? (
+    return (
         <div
             style={{
                 width: '100%',
@@ -57,20 +30,6 @@ export default function NFCScanner(props: NFCScannerProps) {
             {/* <Button onClick={() => props.handleTagScan('abcdefg')} variant='contained' style={{ width: '150px' }}>
                 Test Scan
             </Button> */}
-        </div>
-    ) : (
-        <div
-            style={{
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-            }}
-        >
-            <h1>Scan Finished. </h1>
-            <MdOutlineCreditScore size={128} color='black' />
         </div>
     );
 }
