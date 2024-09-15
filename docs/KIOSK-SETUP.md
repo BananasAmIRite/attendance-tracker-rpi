@@ -11,25 +11,34 @@ sudo apt install onboard -y
 sudo apt install at-spi2-core
 ```
 
-2. Navigate to raspberry pi > preferences > onboard settings & change the following. Then, restart the device.
+2. Switch to the `X11` backend by running `sudo raspi-config` > Advanced Options > Wayland > X11 > Ok > Reboot
 
-    - Auto-show when editing text: true
-    - Window > Dock to screen edge: true
+3. Navigate to raspberry pi > preferences > onboard settings & change the following. Then, restart the device.
+
+-   General > Auto-show when editing text: true
+-   General > Show when unlocking the screen: true
+-   Window > Dock to screen edge: false (this doesn't work with chrome kiosk mode)
+-   Window > Force window on top: true
+-   (Optional) Layout > Phone
+-   (Optional) Theme > Nightshade (The default one is ugly)
+-   Auto-show > Auto-show when editing text: true
 
 ## Setup kiosk
 
-1. Open the wayfire configuration file: `nano $HOME/.config/wayfire.ini`
-2. Paste the following into the `[autostart]` portion of the file (create a new one if there isn't already)
-   2.1. Edit the path for `start-app` to be the path of the project's `start.sh` file
+1. Copy the autostart file into user config
 
-```ini
-panel = wfrespawn wf-panel-pi
-background = wfrespawn pcmanfm --desktop --profile LXDE-pi
-xdg-autostart = lxsession-xdg-autostart
-start-app = bash $HOME/attendance-tracker-rpi/start.sh
-chromium = chromium-browser http://localhost:3000/ --enable-offline-auto-reload --kiosk --noerrdialogs --disable-infobars --no-first-run --ozone-platform=wayland --enable-features=OverlayScrollbar --start-maximized
-screensaver = false
-dpms = false
+```shell
+mkdir -p $HOME/.config/lxsession/LXDE-pi
+cp /etc/xdg/lxsession/LXDE-pi/autostart $HOME/.config/lxsession/LXDE-pi/
 ```
 
-3. `sudo reboot`
+2. Open the autostart config file `nano $HOME/.config/lxsession/LXDE-pi/autostart`
+3. Paste the following at the end of the file and save
+
+```shell
+onboard &
+chromium-browser http://localhost:3000/ --enable-offline-auto-reload --kiosk --noerrdialogs --disable-infobars --no-first-run --start-maximized
+bash path/to/start.sh # replace with absolute path to local git repository
+```
+
+4. `sudo reboot`

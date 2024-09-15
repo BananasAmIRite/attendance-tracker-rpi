@@ -185,6 +185,7 @@ export default function UserScanScreen() {
                         type='text'
                         fullWidth
                         variant='standard'
+                        autoComplete='off'
                     />
                 </DialogContent>
                 <DialogActions>

@@ -87,6 +87,7 @@ export default function NFCUploadScanner(props: NFCUploadScannerProps) {
                 variant='outlined'
                 value={stdId}
                 onChange={(e) => setStdId(e.target.value)}
+                autoComplete='off'
             />
             <br />
             <Button onClick={handleCode} variant='contained'>
