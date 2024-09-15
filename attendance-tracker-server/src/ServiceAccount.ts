@@ -9,7 +9,7 @@ export const serviceAccountAuth = new JWT({
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
 });
 serviceAccountAuth.authorize().then((a) => {
-    console.log('Authorized user. Access Token: ', a.access_token);
+    console.log('Authorized user. ');
 });
 
 export const SheetInstance = sheets({ version: 'v4', auth: serviceAccountAuth });
