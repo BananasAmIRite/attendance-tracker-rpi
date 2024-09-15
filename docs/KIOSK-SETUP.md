@@ -22,6 +22,7 @@ sudo apt install at-spi2-core
 -   (Optional) Layout > Phone
 -   (Optional) Theme > Nightshade (The default one is ugly)
 -   Auto-show > Auto-show when editing text: true
+-   Auto-show > Keyboard movement strategy: Always follow window
 
 ## Setup kiosk
 
