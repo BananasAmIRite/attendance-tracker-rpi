@@ -38,14 +38,14 @@ export default class AttendanceManager {
         }
     }
 
-    private async postOnlineAttendanceEntry(studentId: string, date: string, time: string, attendancePercent: string) {
+    private async postOnlineAttendanceEntry(studentId: string, date: string, time: string) {
         try {
             await SheetInstance.spreadsheets.values.append({
                 spreadsheetId: this.sheetId,
                 range: this.sheetRange,
                 valueInputOption: 'RAW',
                 requestBody: {
-                    values: [[studentId, date, time, attendancePercent]],
+                    values: [[studentId, date, time]],
                 },
             });
         } catch (err: any) {
@@ -114,7 +114,7 @@ export default class AttendanceManager {
         const entries = await this.getCachedAttendance();
         for (const entry of entries) {
             try {
-                await this.postOnlineAttendanceEntry(entry.studentId, entry.date, entry.time, entry.attendancePercent);
+                await this.postOnlineAttendanceEntry(entry.studentId, entry.date, entry.time);
             } catch (err) {
                 throw err;
             }

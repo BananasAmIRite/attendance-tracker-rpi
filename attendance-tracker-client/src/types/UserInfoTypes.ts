@@ -3,6 +3,7 @@ export interface StudentInfo {
     nfcId: string;
     firstName: string;
     lastName: string;
+    attendancePercent: string;
 }
 
 export interface AttendanceEntry {

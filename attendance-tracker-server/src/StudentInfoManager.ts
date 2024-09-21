@@ -5,6 +5,7 @@ export interface StudentInfo {
     firstName: string;
     lastName: string;
     nfcId: string;
+    attendancePercent?: string; 
 }
 
 const rowToStudentInfo = (row: any[]): StudentInfo => ({
@@ -12,9 +13,10 @@ const rowToStudentInfo = (row: any[]): StudentInfo => ({
     firstName: row[1],
     lastName: row[2],
     nfcId: row[3],
+    attendancePercent: row[4],
 });
-
-const studentInfoToRow = (info: StudentInfo): any[] => [info.studentId, info.firstName, info.lastName, info.nfcId];
+// hello
+const studentInfoToRow = (info: StudentInfo): any[] => [info.studentId, info.firstName, info.lastName, info.nfcId, info.attendancePercent];
 
 export default class StudentInfoManager {
     private studentInfoCache: StudentInfo[] = [];
