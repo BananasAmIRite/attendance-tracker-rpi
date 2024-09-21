@@ -35,7 +35,7 @@ cp /etc/xdg/lxsession/LXDE-pi/autostart $HOME/.config/lxsession/LXDE-pi/
 
 2. Open the autostart config file `nano $HOME/.config/lxsession/LXDE-pi/autostart`
 3. Paste the following at the end of the file and save
-
+(NOTE: if your school wifi has any login page, find how passwords are submitted, write & test an HTTP request to be run below)
 ```shell
 onboard &
 chromium-browser http://localhost:3000/ --enable-offline-auto-reload --kiosk --noerrdialogs --disable-infobars --no-first-run --start-maximized
