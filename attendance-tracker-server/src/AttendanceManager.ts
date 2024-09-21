@@ -33,19 +33,19 @@ export default class AttendanceManager {
                 this.postAttendanceEntry(studentId, date, time);
             }
         } else {
-            this.addCacheEntry({ studentId, date, time });
+            this.addCacheEntry({ studentId, date, time});
             console.log('Attendance entry appended to cache. ');
         }
     }
 
-    private async postOnlineAttendanceEntry(studentId: string, date: string, time: string) {
+    private async postOnlineAttendanceEntry(studentId: string, date: string, time: string, attendancePercent: string) {
         try {
             await SheetInstance.spreadsheets.values.append({
                 spreadsheetId: this.sheetId,
                 range: this.sheetRange,
                 valueInputOption: 'RAW',
                 requestBody: {
-                    values: [[studentId, date, time]],
+                    values: [[studentId, date, time, attendancePercent]],
                 },
             });
         } catch (err: any) {
@@ -114,7 +114,7 @@ export default class AttendanceManager {
         const entries = await this.getCachedAttendance();
         for (const entry of entries) {
             try {
-                await this.postOnlineAttendanceEntry(entry.studentId, entry.date, entry.time);
+                await this.postOnlineAttendanceEntry(entry.studentId, entry.date, entry.time, entry.attendancePercent);
             } catch (err) {
                 throw err;
             }
