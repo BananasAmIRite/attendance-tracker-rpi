@@ -22,7 +22,7 @@
 | `GOOGLE_SERVICE_ACCOUNT_EMAIL` | `client_email` in the JSON file                                                                         |                 |
 | `GOOGLE_PRIVATE_KEY`           | `private_key` in the JSON file (do NOT leak this)                                                       |                 |
 | `USER_SHEET_ID`                | sheet id of the user sheet containing all valid users for attendance                                    |                 |
-| `USER_SHEET_RANGE`             | range of user sheet, containing data in order: id, first name, last name, nfc id                        |                 |
+| `USER_SHEET_RANGE`             | range of user sheet, containing data in order: id, first name, last name, nfc id, attendance percent    |                 |
 | `ATTD_SHEET_ID`                | sheet id of the attendance sheet containing all attendance logs                                         |                 |
 | `ATTD_SHEET_RANGE`             | range of attendance sheet, containing data in order: id, date, time                                     |                 |
 | `DATABASE_URL`                 | Database URL for caching in case of WiFi blackout (relative to /prisma)                                 | "file:./dev.db" |

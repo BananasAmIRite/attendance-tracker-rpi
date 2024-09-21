@@ -4,7 +4,7 @@ export interface StudentInfoProps {
     name: string;
     id: string;
     scanTime: string;
-    attendancePercent: string;
+    attendancePercent?: string;
     attendanceStatus: 'ABSENT' | 'PRESENT';
     action: 'SCAN_IN' | 'SCAN_OUT';
 }
@@ -32,9 +32,9 @@ export default function StudentInfoDisplay(props: StudentInfoProps) {
             <h3>You've been marked {props.attendanceStatus === 'ABSENT' ? 'Absent' : 'Present'}</h3>
 
             <h4 style={{ textAlign: 'center', marginTop: '1%', marginBottom: '1%' }}>Student ID: {props.id}</h4>
-            <div>
+            <div style={{ width: '100%' }}>
                 <h4>Scanned in at {props.scanTime}</h4>
-                <h5>Your Attendance Rate: {props.attendancePercent}</h5>
+                {props.attendancePercent && <h4>Attendance Rate: {props.attendancePercent}</h4>}
             </div>
         </div>
     );

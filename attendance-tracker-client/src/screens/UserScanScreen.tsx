@@ -116,7 +116,7 @@ export default function UserScanScreen() {
                     name={`${displayedStudentInfo?.firstName ?? 'No'} ${displayedStudentInfo?.lastName ?? 'Student'}`}
                     id={displayedStudentInfo?.studentId ?? 'No Id'}
                     scanTime={displayedStudentInfo?.scanTime ?? 'None'}
-                    attendancePercent={displayedStudentInfo?.attendancePercent ?? 'Attendance Percentage'}
+                    attendancePercent={displayedStudentInfo?.attendancePercent}
                     attendanceStatus={'PRESENT'}
                     action={'SCAN_IN'}
                 />
