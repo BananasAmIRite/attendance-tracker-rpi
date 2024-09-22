@@ -15,8 +15,10 @@ const rowToStudentInfo = (row) => ({
     firstName: row[1],
     lastName: row[2],
     nfcId: row[3],
+    attendancePercent: row[4],
 });
-const studentInfoToRow = (info) => [info.studentId, info.firstName, info.lastName, info.nfcId];
+// hello
+const studentInfoToRow = (info) => [info.studentId, info.firstName, info.lastName, info.nfcId, info.attendancePercent];
 class StudentInfoManager {
     constructor() {
         this.studentInfoCache = [];

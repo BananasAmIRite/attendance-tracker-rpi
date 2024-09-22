@@ -12,6 +12,6 @@ exports.serviceAccountAuth = new google_auth_library_1.JWT({
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
 });
 exports.serviceAccountAuth.authorize().then((a) => {
-    console.log('Authorized user. Access Token: ', a.access_token);
+    console.log('Authorized user. ');
 });
 exports.SheetInstance = (0, sheets_1.sheets)({ version: 'v4', auth: exports.serviceAccountAuth });
