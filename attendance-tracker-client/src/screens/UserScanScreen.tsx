@@ -43,10 +43,10 @@ export default function UserScanScreen() {
     const handleCodeScan = (id: string) =>
         new Promise<boolean>(async (res, rej) => {
             console.log('handling code: ' + id);
-            if (!validateId(id)) return res(false);
+            // if (!validateId(id)) return res(false);
 
             console.log(displayUser, id, lastId);
-            if (displayUser && displayUser !== 'LOADING') return res(false); // disable scanning when user is being displayed
+            if (displayUser) return res(false); // disable scanning when user is being displayed
             if (id === lastId) {
                 showError('You already scanned!');
                 return res(false);

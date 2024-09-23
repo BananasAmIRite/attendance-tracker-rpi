@@ -27,13 +27,15 @@ export default class AttendanceManager {
                         values: [[studentId, date, time]],
                     },
                 });
+                console.log(`Successfully posted attendance entry: ${studentId}, ${date}, ${time}`);
             } catch (err) {
-                console.log('Error occurred. Switching to offline mode');
+                console.log('Error occurred posting attendance entry. Switching to offline mode');
+                console.log(`Error: ${err}`);
                 this.mode = 'OFFLINE';
                 this.postAttendanceEntry(studentId, date, time);
             }
         } else {
-            this.addCacheEntry({ studentId, date, time});
+            this.addCacheEntry({ studentId, date, time });
             console.log('Attendance entry appended to cache. ');
         }
     }
@@ -49,13 +51,14 @@ export default class AttendanceManager {
                 },
             });
         } catch (err: any) {
+            console.log(`Error posting online attendance entry: ${err}`);
             throw err;
         }
     }
 
     public async testOnlineStatus(): Promise<boolean> {
         try {
-            let response = await SheetInstance.spreadsheets.values.get({
+            await SheetInstance.spreadsheets.values.get({
                 spreadsheetId: this.sheetId,
                 range: this.sheetRange,
             });
@@ -75,6 +78,7 @@ export default class AttendanceManager {
                 spreadsheetId: this.sheetId,
                 range: this.sheetRange,
             });
+            console.log('Got attendance entries successfully');
         } catch (err) {
             this.mode = 'OFFLINE';
             return [];
@@ -110,16 +114,19 @@ export default class AttendanceManager {
     }
 
     public async flushCachedAttendance() {
-        // throw new Error('nah nah nah boo boo');
         const entries = await this.getCachedAttendance();
         for (const entry of entries) {
             try {
+                console.log(`Flushing cached attendance: ${entry.studentId}, ${entry.date}, ${entry.time}`);
                 await this.postOnlineAttendanceEntry(entry.studentId, entry.date, entry.time);
+                console.log(`Flushed cached attendance`);
             } catch (err) {
+                console.log('Error flushing cached attendance. ');
                 throw err;
             }
         }
         await this.clearAttendanceCache();
+        console.log('Clearing attendance cache...');
     }
 
     private async addCacheEntry(entry: AttendanceEntry) {

@@ -5,7 +5,7 @@ export interface StudentInfo {
     firstName: string;
     lastName: string;
     nfcId: string;
-    attendancePercent?: string; 
+    attendancePercent?: string;
 }
 
 const rowToStudentInfo = (row: any[]): StudentInfo => ({
@@ -16,7 +16,13 @@ const rowToStudentInfo = (row: any[]): StudentInfo => ({
     attendancePercent: row[4],
 });
 // hello
-const studentInfoToRow = (info: StudentInfo): any[] => [info.studentId, info.firstName, info.lastName, info.nfcId, info.attendancePercent];
+const studentInfoToRow = (info: StudentInfo): any[] => [
+    info.studentId,
+    info.firstName,
+    info.lastName,
+    info.nfcId,
+    info.attendancePercent,
+];
 
 export default class StudentInfoManager {
     private studentInfoCache: StudentInfo[] = [];
@@ -54,6 +60,7 @@ export default class StudentInfoManager {
                     range: this.sheetRange,
                 });
             } catch (err) {
+                console.log(`Error occurred while getting student info: ${err}. Retrying with offline mode`);
                 this.mode = 'OFFLINE';
                 return this.getStudentInfo(onlineQualifier, offlineQualifier);
             }
@@ -62,7 +69,12 @@ export default class StudentInfoManager {
 
             if (values) {
                 for (const row of values) {
-                    if (onlineQualifier(row)) return rowToStudentInfo(row);
+                    if (onlineQualifier(row)) {
+                        const studentInfo = rowToStudentInfo(row);
+                        console.log(`Got student info: ${JSON.stringify(studentInfo)}`);
+
+                        return studentInfo;
+                    }
                 }
             }
         } else {
@@ -84,7 +96,9 @@ export default class StudentInfoManager {
                 spreadsheetId: this.sheetId,
                 range: this.sheetRange,
             });
+            console.log('Successfully obtained all student info');
         } catch (err) {
+            console.log("Couldn't load all student info");
             this.mode = 'OFFLINE';
             return;
         }
@@ -109,7 +123,7 @@ export default class StudentInfoManager {
                 values.push(studentInfoToRow(info));
             }
 
-            SheetInstance.spreadsheets.values.update({
+            await SheetInstance.spreadsheets.values.update({
                 spreadsheetId: this.sheetId,
                 range: this.sheetRange,
                 requestBody: { values },
@@ -118,6 +132,7 @@ export default class StudentInfoManager {
 
             console.log(`Student id ${studentId} successfully linked to NFC id ${nfcId}`);
         } catch (err) {
+            console.log('Error occurred linking NFC ID to student ID: ' + err);
             this.mode = 'OFFLINE';
         }
     }

@@ -101,12 +101,11 @@ app.post('/attendance/push', async (req, res) => {
         return n < 10 ? '0' + n : n;
     };
     await attdManager.postAttendanceEntry(
-        studentId, 
+        studentId,
         `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
         `${date.getHours() === 12 || date.getHours() === 0 ? 12 : date.getHours() % 12}:${formatTwoDigits(
             date.getMinutes()
         )} ${date.getHours() >= 12 ? 'PM' : 'AM'}`
-
     );
 
     res.status(200).end();
@@ -153,7 +152,7 @@ app.get('/adminpanel/verify', async (req, res) => {
 app.use(handleErrors);
 
 console.log(`Running rfid script with python path: ${process.env.PYTHON_PATH}`);
-const rfidProcess = spawn(process.env.PYTHON_PATH as string, ['./rfid/rfid.py']);
+const rfidProcess = spawn(process.env.PYTHON_PATH as string, ['./rfid/rfid-sim.py']);
 rfidProcess.stdout.on('data', (data) => {
     socketIO.emit('tag', data.toString());
     console.log('RFID Data received: ', data.toString());
