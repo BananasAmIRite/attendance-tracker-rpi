@@ -16,3 +16,19 @@ model Attendance {
   date      String
   time      String
 }
+
+model StudentInformation {
+  id                  Int      @id @default(autoincrement())
+  studentId           String      @unique
+  firstName           String      @default("")
+  lastName            String      @default("")
+  nfcId               String      @default("")
+  attendancePercent   String      @default("")
+}
+
+
+model NFCChange {
+  id            Int      @id @default(autoincrement())
+  studentId     String
+  nfcId         String      @default("")
+}

@@ -84,6 +84,40 @@ app.get('/studentInfo/online', async (req, res) => {
         .end();
 });
 
+app.post('/studentInfo/changesCache/flush', async (req, res, next) => {
+    console.log('Flushing NFC change...');
+    siManager
+        .flushCachedInfoChanges()
+        .then(() => {
+            res.status(200).end();
+        })
+        .catch(next);
+});
+
+app.get('/studentInfo/changesCache', async (req, res) => {
+    console.log('Getting NFC change cache...');
+    const entries = await siManager.getCachedStudentChanges();
+    res.status(200).send(entries).end();
+});
+
+app.post('/studentInfo/changesCache/clear', async (req, res) => {
+    console.log('Clearing NFC change cache...');
+    await siManager.clearInfoChangeCache();
+    res.status(200).end();
+});
+
+app.get('/studentInfo/siCache', async (req, res) => {
+    console.log('Getting student info cache...');
+    const entries = await siManager.getCachedStudentInfo();
+    res.status(200).send(entries).end();
+});
+
+app.post('/studentInfo/siCache/rebuild', async (req, res) => {
+    console.log('Clearing student info cache...');
+    await siManager.rebuildStudentInfoCache();
+    res.status(200).end();
+});
+
 // ATTENDANCE
 
 app.get('/attendance/online', async (req, res) => {

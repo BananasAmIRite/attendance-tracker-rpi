@@ -125,8 +125,9 @@ export default class AttendanceManager {
                 throw err;
             }
         }
-        await this.clearAttendanceCache();
+
         console.log('Clearing attendance cache...');
+        await this.clearAttendanceCache();
     }
 
     private async addCacheEntry(entry: AttendanceEntry) {
@@ -140,7 +141,7 @@ export default class AttendanceManager {
     }
 
     public async getAllCacheEntries(): Promise<Attendance[]> {
-        return prisma.attendance.findMany();
+        return await prisma.attendance.findMany();
     }
 
     public async clearAttendanceCache() {
