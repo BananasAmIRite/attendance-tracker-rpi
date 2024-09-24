@@ -131,7 +131,7 @@ app.get('/adminpanel/verify', (req, res) => __awaiter(void 0, void 0, void 0, fu
 }));
 app.use(handleErrors);
 console.log(`Running rfid script with python path: ${process.env.PYTHON_PATH}`);
-const rfidProcess = (0, child_process_1.spawn)(process.env.PYTHON_PATH, ['./rfid/rfid.py']);
+const rfidProcess = (0, child_process_1.spawn)(process.env.PYTHON_PATH, ['./rfid/rfid-sim.py']);
 rfidProcess.stdout.on('data', (data) => {
     socketIO.emit('tag', data.toString());
     console.log('RFID Data received: ', data.toString());

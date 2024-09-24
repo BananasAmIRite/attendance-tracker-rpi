@@ -18,7 +18,13 @@ const rowToStudentInfo = (row) => ({
     attendancePercent: row[4],
 });
 // hello
-const studentInfoToRow = (info) => [info.studentId, info.firstName, info.lastName, info.nfcId, info.attendancePercent];
+const studentInfoToRow = (info) => [
+    info.studentId,
+    info.firstName,
+    info.lastName,
+    info.nfcId,
+    info.attendancePercent,
+];
 class StudentInfoManager {
     constructor() {
         this.studentInfoCache = [];
@@ -47,14 +53,18 @@ class StudentInfoManager {
                     });
                 }
                 catch (err) {
+                    console.log(`Error occurred while getting student info: ${err}. Retrying with offline mode`);
                     this.mode = 'OFFLINE';
                     return this.getStudentInfo(onlineQualifier, offlineQualifier);
                 }
                 const values = response.data.values;
                 if (values) {
                     for (const row of values) {
-                        if (onlineQualifier(row))
-                            return rowToStudentInfo(row);
+                        if (onlineQualifier(row)) {
+                            const studentInfo = rowToStudentInfo(row);
+                            console.log(`Got student info: ${JSON.stringify(studentInfo)}`);
+                            return studentInfo;
+                        }
                     }
                 }
             }
@@ -78,8 +88,10 @@ class StudentInfoManager {
                     spreadsheetId: this.sheetId,
                     range: this.sheetRange,
                 });
+                console.log('Successfully obtained all student info');
             }
             catch (err) {
+                console.log("Couldn't load all student info");
                 this.mode = 'OFFLINE';
                 return;
             }
@@ -102,7 +114,7 @@ class StudentInfoManager {
                         info.nfcId = nfcId;
                     values.push(studentInfoToRow(info));
                 }
-                ServiceAccount_1.SheetInstance.spreadsheets.values.update({
+                yield ServiceAccount_1.SheetInstance.spreadsheets.values.update({
                     spreadsheetId: this.sheetId,
                     range: this.sheetRange,
                     requestBody: { values },
@@ -111,6 +123,7 @@ class StudentInfoManager {
                 console.log(`Student id ${studentId} successfully linked to NFC id ${nfcId}`);
             }
             catch (err) {
+                console.log('Error occurred linking NFC ID to student ID: ' + err);
                 this.mode = 'OFFLINE';
             }
         });
