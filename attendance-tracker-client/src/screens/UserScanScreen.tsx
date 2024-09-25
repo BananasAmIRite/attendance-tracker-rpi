@@ -89,7 +89,10 @@ export default function UserScanScreen() {
     const validateId = (id: string): boolean => !isNaN(parseInt(id));
 
     useEffect(() => {
-        loadStudentInfo();
+        setDisplayUser('LOADING');
+        loadStudentInfo().then(() => {
+            setDisplayUser(false);
+        });
     }, []);
 
     return (

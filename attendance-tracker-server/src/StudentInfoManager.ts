@@ -1,6 +1,7 @@
 import { NFCChange, StudentInformation } from '@prisma/client';
 import { SheetInstance } from './ServiceAccount';
 import prisma from './PrismaClient';
+import { findConfigFile } from 'typescript';
 
 export interface StudentInfo {
     studentId: string;
@@ -23,8 +24,14 @@ const studentInfoToRow = (info: StudentInfo): any[] => [
     info.firstName,
     info.lastName,
     info.nfcId,
-    info.attendancePercent,
+    // info.attendancePercent,
 ];
+
+const useSICache = process.env.USE_SI_CACHE_DEFAULT === 'true';
+const useNFCCache = process.env.USE_NFC_CACHE_DEFAULT === 'true';
+
+console.log(`Config: Using student info cache by default set to ${useSICache}`);
+console.log(`Config: Using NFC info cache by default set to ${useNFCCache}`);
 
 export default class StudentInfoManager {
     private sheetId: string = process.env.USER_SHEET_ID as string;
@@ -52,7 +59,8 @@ export default class StudentInfoManager {
         onlineQualifier: (val: any[]) => boolean,
         offlineQualifier: (info: StudentInfo) => boolean
     ): Promise<StudentInfo | null> {
-        if (this.mode === 'ONLINE') {
+        console.log('getting student info...', useSICache);
+        if (this.mode === 'ONLINE' && !useSICache) {
             let response;
             try {
                 response = await SheetInstance.spreadsheets.values.get({
@@ -79,7 +87,8 @@ export default class StudentInfoManager {
             }
         } else {
             // offline mode
-            for (const info of await this.getCachedStudentInfo()) {
+            const cached = await this.getCachedStudentInfo();
+            for (const info of cached) {
                 if (offlineQualifier(info)) return info;
             }
         }
@@ -89,68 +98,38 @@ export default class StudentInfoManager {
 
     public async loadAllStudentInfo() {
         if (this.mode !== 'ONLINE') return;
-
-        let response;
         try {
-            response = await SheetInstance.spreadsheets.values.get({
-                spreadsheetId: this.sheetId,
-                range: this.sheetRange,
-            });
-            console.log('Successfully obtained all student info');
+            console.log(`reconciling student infos...`);
+            await this.reconcileStudentCache();
+            console.log('Reconciled student infos. ');
         } catch (err) {
-            console.log("Couldn't load all student info");
+            console.log("Couldn't reconcile student infos");
             this.mode = 'OFFLINE';
             return;
         }
-
-        const values = response.data.values;
-
-        const newStudentInfoCache = [];
-        if (values) {
-            for (const row of values) {
-                newStudentInfoCache.push(rowToStudentInfo(row));
-            }
-        }
-        console.log(`reconciling student infos: ${JSON.stringify(newStudentInfoCache)}`);
-        await this.reconcileStudentCache(newStudentInfoCache);
-        console.log('Reconciled student infos. ');
     }
 
-    private async reconcileStudentCache(newValues: StudentInfo[]) {
+    private async reconcileStudentCache() {
         const currentCache = await prisma.studentInformation.findMany();
-        for (const newValue of newValues) {
-            const cachedEntry = currentCache.find((e) => e.studentId === newValue.studentId);
-            if (!cachedEntry) {
-                await prisma.studentInformation.create({
-                    data: {
-                        ...newValue,
-                    },
-                });
-                continue;
-            }
+        // rebuild cache
+        await this.rebuildStudentInfoCache();
+        const newCache = await prisma.studentInformation.findMany();
+        for (const newCacheValue of newCache) {
+            if (!newCacheValue.studentId) continue; // ignore the ones with nothing in it
 
-            // nfc values don't line up and the sheets nfc value exists
-            if (cachedEntry.nfcId !== newValue.nfcId && newValue.nfcId !== '') {
-                // update the cache to use the sheet's nfc values
+            // for each value in the new cache, find the matching value in the old one
+            const oldCachedEntry = currentCache.find((e) => e.studentId === newCacheValue.studentId);
+
+            if (!oldCachedEntry) continue; // no cache entry doesn't exist, return
+            // preserve old nfc values if there are no new nfc values
+            if (oldCachedEntry.nfcId !== newCacheValue.nfcId && newCacheValue.nfcId === '') {
+                // update the cache to use the old nfc values
                 await prisma.studentInformation.update({
                     where: {
-                        studentId: cachedEntry.studentId,
+                        id: newCacheValue.id,
                     },
                     data: {
-                        nfcId: newValue.nfcId,
-                    },
-                });
-            }
-
-            // attendance % doesn't line up
-            if (cachedEntry.nfcId !== newValue.nfcId) {
-                // update the cache to use the sheet's attendance %
-                await prisma.studentInformation.update({
-                    where: {
-                        studentId: cachedEntry.studentId,
-                    },
-                    data: {
-                        attendancePercent: newValue.attendancePercent,
+                        nfcId: oldCachedEntry.nfcId,
                     },
                 });
             }
@@ -186,6 +165,7 @@ export default class StudentInfoManager {
             if (values) {
                 for (const row of values) {
                     const dbRow = rowToStudentInfo(row);
+                    // if (!dbRow.studentId) continue;
                     await prisma.studentInformation.create({
                         data: {
                             ...dbRow,
@@ -201,8 +181,8 @@ export default class StudentInfoManager {
     }
 
     public async bindStudentId(studentId: string, nfcId: string) {
+        if (useNFCCache) return this.bindStudentIdOffline(studentId, nfcId);
         try {
-            this.loadAllStudentInfo();
             const values: any[][] = [];
 
             for (const info of await this.getCachedStudentInfo()) {
@@ -218,11 +198,44 @@ export default class StudentInfoManager {
             });
 
             console.log(`Student id ${studentId} successfully linked to NFC id ${nfcId}`);
+            const foundInfo = await prisma.studentInformation.findFirst({
+                where: {
+                    studentId,
+                },
+            });
+
+            if (!foundInfo) return;
+
+            await prisma.studentInformation.update({
+                where: {
+                    id: foundInfo.id,
+                },
+                data: {
+                    nfcId: nfcId,
+                },
+            });
+            console.log(`Updated StudentInfo DB to reflect NFC ID change`);
         } catch (err) {
             console.log('Error occurred linking NFC ID to student ID: ' + err);
             this.mode = 'OFFLINE';
             this.bindStudentIdOffline(studentId, nfcId);
         }
+    }
+
+    public async bindOnlineStudentIds(changes: NFCChange[]) {
+        const values: any[][] = [];
+        for (const info of await this.getCachedStudentInfo()) {
+            const change = changes.find((e) => e.studentId === info.studentId);
+            if (change) info.nfcId = change.nfcId;
+            values.push(studentInfoToRow(info));
+        }
+
+        await SheetInstance.spreadsheets.values.update({
+            spreadsheetId: this.sheetId,
+            range: this.sheetRange,
+            requestBody: { values },
+            valueInputOption: 'RAW',
+        });
     }
 
     private async bindStudentIdOffline(studentId: string, nfcId: string) {
@@ -233,9 +246,17 @@ export default class StudentInfoManager {
                 nfcId: nfcId,
             },
         });
-        await prisma.studentInformation.update({
+        const foundInfo = await prisma.studentInformation.findFirst({
             where: {
                 studentId,
+            },
+        });
+
+        if (!foundInfo) return;
+
+        await prisma.studentInformation.update({
+            where: {
+                id: foundInfo.id,
             },
             data: {
                 nfcId: nfcId,
@@ -279,13 +300,12 @@ export default class StudentInfoManager {
     }
 
     public async postOnlineInfoChange(changes: NFCChange[]): Promise<void> {
-        for (const change of changes) {
-            try {
-                await this.bindStudentId(change.studentId, change.nfcId);
-            } catch (err: any) {
-                console.log(`Error posting online attendance entry: ${err}`);
-                throw err;
-            }
+        try {
+            console.log('Posting online nfc changes...');
+            await this.bindOnlineStudentIds(changes);
+        } catch (err: any) {
+            console.log(`Error posting online nfc changes: ${err}`);
+            throw err;
         }
     }
 

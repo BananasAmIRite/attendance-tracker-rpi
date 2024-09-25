@@ -19,7 +19,7 @@ model Attendance {
 
 model StudentInformation {
   id                  Int      @id @default(autoincrement())
-  studentId           String      @unique
+  studentId           String      @default("")
   firstName           String      @default("")
   lastName            String      @default("")
   nfcId               String      @default("")

@@ -80,6 +80,35 @@ app.get('/studentInfo/online', (req, res) => __awaiter(void 0, void 0, void 0, f
         .send({ online: siManager.mode === 'ONLINE' })
         .end();
 }));
+app.post('/studentInfo/changesCache/flush', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('Flushing NFC change...');
+    siManager
+        .flushCachedInfoChanges()
+        .then(() => {
+        res.status(200).end();
+    })
+        .catch(next);
+}));
+app.get('/studentInfo/changesCache', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('Getting NFC change cache...');
+    const entries = yield siManager.getCachedStudentChanges();
+    res.status(200).send(entries).end();
+}));
+app.post('/studentInfo/changesCache/clear', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('Clearing NFC change cache...');
+    yield siManager.clearInfoChangeCache();
+    res.status(200).end();
+}));
+app.get('/studentInfo/siCache', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('Getting student info cache...');
+    const entries = yield siManager.getCachedStudentInfo();
+    res.status(200).send(entries).end();
+}));
+app.post('/studentInfo/siCache/rebuild', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('Clearing student info cache...');
+    yield siManager.rebuildStudentInfoCache();
+    res.status(200).end();
+}));
 // ATTENDANCE
 app.get('/attendance/online', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.status(200)

@@ -28,6 +28,9 @@
 | `DATABASE_URL`                 | Database URL for caching in case of WiFi blackout (relative to /prisma)                                 | "file:./dev.db" |
 | `PYTHON_PATH`                  | Path to the python installation's python executable; Fill this out in [Setup Manual](./SETUP-MANUAL.md) |                 |
 | `ADMIN_PANEL_PW`               | the password to access attendance caches                                                                | admin           |
+| `USE_SI_CACHE_DEFAULT`         | Whether or not to use data from student info cache instead of querying from sheets                      | true            |
+| `USE_NFC_CACHE_DEFAULT`        | Whether or not to use the nfc cache as the default way to send nfc data                                 | false           |
+| `USE_ATTD_CACHE_DEFAULT`       | Whether or not to use the attendance cache as the default way to send attendance data                   | false           |
 
 ## Configure Client
 

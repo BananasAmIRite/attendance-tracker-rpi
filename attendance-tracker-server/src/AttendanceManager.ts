@@ -8,6 +8,9 @@ export interface AttendanceEntry {
     time: string;
 }
 
+const useAttdCache = process.env.USE_ATTD_CACHE_DEFAULT === 'true';
+console.log(`Config: Using attendance cache by default set to ${useAttdCache}`);
+
 export default class AttendanceManager {
     private sheetId: string = process.env.ATTD_SHEET_ID as string;
     private sheetRange: string = process.env.ATTD_SHEET_RANGE as string;
@@ -17,7 +20,7 @@ export default class AttendanceManager {
     public constructor() {}
 
     public async postAttendanceEntry(studentId: string, date: string, time: string) {
-        if (this.mode === 'ONLINE') {
+        if (this.mode === 'ONLINE' && !useAttdCache) {
             try {
                 await SheetInstance.spreadsheets.values.append({
                     spreadsheetId: this.sheetId,
@@ -40,14 +43,14 @@ export default class AttendanceManager {
         }
     }
 
-    private async postOnlineAttendanceEntry(studentId: string, date: string, time: string) {
+    private async postOnlineAttendanceEntries(entries: AttendanceEntry[]) {
         try {
             await SheetInstance.spreadsheets.values.append({
                 spreadsheetId: this.sheetId,
                 range: this.sheetRange,
                 valueInputOption: 'RAW',
                 requestBody: {
-                    values: [[studentId, date, time]],
+                    values: entries.map((e) => [e.studentId, e.date, e.time]),
                 },
             });
         } catch (err: any) {
@@ -115,15 +118,13 @@ export default class AttendanceManager {
 
     public async flushCachedAttendance() {
         const entries = await this.getCachedAttendance();
-        for (const entry of entries) {
-            try {
-                console.log(`Flushing cached attendance: ${entry.studentId}, ${entry.date}, ${entry.time}`);
-                await this.postOnlineAttendanceEntry(entry.studentId, entry.date, entry.time);
-                console.log(`Flushed cached attendance`);
-            } catch (err) {
-                console.log('Error flushing cached attendance. ');
-                throw err;
-            }
+        try {
+            console.log(`Flushing cached attendance...`);
+            await this.postOnlineAttendanceEntries(entries);
+            console.log(`Flushed cached attendance`);
+        } catch (err) {
+            console.log('Error flushing cached attendance. ');
+            throw err;
         }
 
         console.log('Clearing attendance cache...');

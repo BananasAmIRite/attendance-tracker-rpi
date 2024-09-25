@@ -14,6 +14,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const ServiceAccount_1 = require("./ServiceAccount");
 const PrismaClient_1 = __importDefault(require("./PrismaClient"));
+const useAttdCache = process.env.USE_ATTD_CACHE_DEFAULT === 'true';
+console.log(`Config: Using attendance cache by default set to ${useAttdCache}`);
 class AttendanceManager {
     constructor() {
         this.sheetId = process.env.ATTD_SHEET_ID;
@@ -22,7 +24,7 @@ class AttendanceManager {
     }
     postAttendanceEntry(studentId, date, time) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.mode === 'ONLINE') {
+            if (this.mode === 'ONLINE' && !useAttdCache) {
                 try {
                     yield ServiceAccount_1.SheetInstance.spreadsheets.values.append({
                         spreadsheetId: this.sheetId,
@@ -32,9 +34,11 @@ class AttendanceManager {
                             values: [[studentId, date, time]],
                         },
                     });
+                    console.log(`Successfully posted attendance entry: ${studentId}, ${date}, ${time}`);
                 }
                 catch (err) {
-                    console.log('Error occurred. Switching to offline mode');
+                    console.log('Error occurred posting attendance entry. Switching to offline mode');
+                    console.log(`Error: ${err}`);
                     this.mode = 'OFFLINE';
                     this.postAttendanceEntry(studentId, date, time);
                 }
@@ -45,7 +49,7 @@ class AttendanceManager {
             }
         });
     }
-    postOnlineAttendanceEntry(studentId, date, time) {
+    postOnlineAttendanceEntries(entries) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield ServiceAccount_1.SheetInstance.spreadsheets.values.append({
@@ -53,11 +57,12 @@ class AttendanceManager {
                     range: this.sheetRange,
                     valueInputOption: 'RAW',
                     requestBody: {
-                        values: [[studentId, date, time]],
+                        values: entries.map((e) => [e.studentId, e.date, e.time]),
                     },
                 });
             }
             catch (err) {
+                console.log(`Error posting online attendance entry: ${err}`);
                 throw err;
             }
         });
@@ -65,7 +70,7 @@ class AttendanceManager {
     testOnlineStatus() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                let response = yield ServiceAccount_1.SheetInstance.spreadsheets.values.get({
+                yield ServiceAccount_1.SheetInstance.spreadsheets.values.get({
                     spreadsheetId: this.sheetId,
                     range: this.sheetRange,
                 });
@@ -88,6 +93,7 @@ class AttendanceManager {
                     spreadsheetId: this.sheetId,
                     range: this.sheetRange,
                 });
+                console.log('Got attendance entries successfully');
             }
             catch (err) {
                 this.mode = 'OFFLINE';
@@ -124,16 +130,17 @@ class AttendanceManager {
     }
     flushCachedAttendance() {
         return __awaiter(this, void 0, void 0, function* () {
-            // throw new Error('nah nah nah boo boo');
             const entries = yield this.getCachedAttendance();
-            for (const entry of entries) {
-                try {
-                    yield this.postOnlineAttendanceEntry(entry.studentId, entry.date, entry.time);
-                }
-                catch (err) {
-                    throw err;
-                }
+            try {
+                console.log(`Flushing cached attendance...`);
+                yield this.postOnlineAttendanceEntries(entries);
+                console.log(`Flushed cached attendance`);
             }
+            catch (err) {
+                console.log('Error flushing cached attendance. ');
+                throw err;
+            }
+            console.log('Clearing attendance cache...');
             yield this.clearAttendanceCache();
         });
     }
@@ -150,7 +157,7 @@ class AttendanceManager {
     }
     getAllCacheEntries() {
         return __awaiter(this, void 0, void 0, function* () {
-            return PrismaClient_1.default.attendance.findMany();
+            return yield PrismaClient_1.default.attendance.findMany();
         });
     }
     clearAttendanceCache() {
