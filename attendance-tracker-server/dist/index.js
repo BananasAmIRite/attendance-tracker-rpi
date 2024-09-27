@@ -92,7 +92,7 @@ server.listen(8080, () => {
 // ---- NFC PROCESSING ----
 // spawn the python process to communicate rfid data
 console.log(`Running rfid script with python path: ${process.env.PYTHON_PATH}`);
-const rfidProcess = (0, child_process_1.spawn)(process.env.PYTHON_PATH, ['./rfid/rfid-sim.py']);
+const rfidProcess = (0, child_process_1.spawn)(process.env.PYTHON_PATH, ['./rfid/rfid.py']);
 rfidProcess.stdout.on('data', (data) => {
     const [type, value] = data.toString().split(':');
     if (type === 'STAT')
