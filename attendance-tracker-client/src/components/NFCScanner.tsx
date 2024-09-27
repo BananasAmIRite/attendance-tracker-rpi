@@ -1,16 +1,22 @@
-import { useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 import { socket } from '../server/nfc';
 import { MdOutlinePageview } from 'react-icons/md';
+import { GlobalMessageContext } from '../App';
 export interface NFCScannerProps {
     handleTagScan: (tag: string) => void;
 }
 
 export default function NFCScanner(props: NFCScannerProps) {
+    const { setMessage } = useContext(GlobalMessageContext);
     useEffect(() => {
         socket.removeAllListeners();
         socket.on('tag', async (tag) => {
             console.log('Received tag, ', tag);
-            props.handleTagScan(tag);
+            await props.handleTagScan(tag);
+        });
+        socket.on('status', async (online) => {
+            console.log(`Received Status, ${online}`);
+            setMessage(online ? '' : 'WARNING: Scanner is offline!');
         });
     }, []);
 
