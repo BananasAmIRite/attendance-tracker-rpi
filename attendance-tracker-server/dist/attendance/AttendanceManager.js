@@ -100,7 +100,7 @@ class AttendanceManager {
                     continue;
                 }
                 // use the scan out sheet if I already scanned in or there's already a value for scanning in
-                const sheetRange = rangesToQuery.findIndex((e) => e.row === row && e.col === col) !== -1
+                const sheetRange = attdSheetData[row][col] || rangesToQuery.findIndex((e) => e.row === row && e.col === col) !== -1
                     ? this.outSheetRange
                     : this.inSheetRange;
                 const range = (0, SheetUtils_1.createSingleA1Range)(sheetRange, row, col);
