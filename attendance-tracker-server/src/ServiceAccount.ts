@@ -7,7 +7,7 @@ export let serviceAccountAuth: JWT;
 
 export let SheetInstance: sheets_v4.Sheets;
 
-export const initiateJWT = async () => {
+export const initJWT = async () => {
     console.log('Initiating JWT and SheetInstance');
     serviceAccountAuth = new JWT({
         email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,

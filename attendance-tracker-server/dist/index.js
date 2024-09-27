@@ -15,13 +15,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const body_parser_1 = __importDefault(require("body-parser"));
 const cors_1 = __importDefault(require("cors"));
 const express_1 = __importDefault(require("express"));
-const AttendanceManager_1 = __importDefault(require("./AttendanceManager"));
-const StudentInfoManager_1 = __importDefault(require("./StudentInfoManager"));
+const AttendanceManager_1 = __importDefault(require("./attendance/AttendanceManager"));
 const http_1 = require("http");
 const socket_io_1 = require("socket.io");
 const child_process_1 = require("child_process");
 const ServiceAccount_1 = require("./ServiceAccount");
 const promises_1 = require("dns/promises");
+const StudentInfoManager_1 = __importDefault(require("./studentinfo/StudentInfoManager"));
+const StudentInfo_route_1 = __importDefault(require("./routes/studentInfo/StudentInfo.route"));
+const Attendance_route_1 = __importDefault(require("./routes/attendance/Attendance.route"));
+// ---- WEB APP ----
+// set up web app and websocket
 const app = (0, express_1.default)();
 const server = (0, http_1.createServer)(app);
 const socketIO = new socket_io_1.Server(server, {
@@ -29,10 +33,34 @@ const socketIO = new socket_io_1.Server(server, {
         origin: 'http://localhost:3000',
     },
 });
+socketIO.on('connection', (socket) => {
+    console.log('socket connection established');
+});
+// allow any origin to request data
 app.use((0, cors_1.default)({
     origin: '*',
 }));
+// parse request bodies into json
 app.use(body_parser_1.default.json());
+const checkOnline = () => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // if we can resolve google.com then we're online
+        yield (0, promises_1.resolve)('www.google.com');
+        AttendanceManager_1.default.mode = 'ONLINE';
+        StudentInfoManager_1.default.mode = 'ONLINE';
+        // set up online stuff
+        (0, ServiceAccount_1.initJWT)();
+        AttendanceManager_1.default.loadSheetCache();
+    }
+    catch (err) {
+        AttendanceManager_1.default.mode = 'OFFLINE';
+        StudentInfoManager_1.default.mode = 'OFFLINE';
+    }
+});
+// routes
+app.use('/studentInfo', StudentInfo_route_1.default);
+app.use('/attendance', Attendance_route_1.default);
+// error handling
 const handleErrors = (err, req, res, next) => {
     console.error('error occurred: ', err.message);
     if (res.headersSent) {
@@ -40,150 +68,38 @@ const handleErrors = (err, req, res, next) => {
     }
     res.status(500).json({ error: err.message }).end();
 };
-const attdManager = new AttendanceManager_1.default();
-const siManager = new StudentInfoManager_1.default();
-server.listen(8080, () => {
-    console.log(`listening on *:8080`);
-});
-app.get('/studentInfo/sid', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.query;
-    console.log('Student info by ID: ', id);
-    const info = yield siManager.getStudentInfoBySID(id);
-    res.status(info ? 200 : 404)
-        .send(info)
-        .end();
-}));
-app.get('/studentInfo/nfc', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.query;
-    console.log('Student info by NFC ID: ', id);
-    const info = yield siManager.getStudentInfoByNFCID(id);
-    res.status(info ? 200 : 404)
-        .send(info)
-        .end();
-}));
-app.post('/studentInfo/bind', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { studentId, nfcId } = req.body;
-    console.log('Binding Student with NFC: ', studentId, nfcId);
-    try {
-        yield siManager.bindStudentId(studentId, nfcId);
-        res.status(200).end();
-    }
-    catch (err) {
-        res.status(401).end();
-    }
-}));
-app.get('/studentInfo/load', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('Loading student info...');
-    yield siManager.loadAllStudentInfo();
-    res.status(200).end();
-}));
-app.get('/studentInfo/online', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    res.status(200)
-        .send({ online: siManager.mode === 'ONLINE' })
-        .end();
-}));
-app.post('/studentInfo/changesCache/flush', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('Flushing NFC change...');
-    siManager
-        .flushCachedInfoChanges()
-        .then(() => {
-        res.status(200).end();
-    })
-        .catch(next);
-}));
-app.get('/studentInfo/changesCache', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('Getting NFC change cache...');
-    const entries = yield siManager.getCachedStudentChanges();
-    res.status(200).send(entries).end();
-}));
-app.post('/studentInfo/changesCache/clear', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('Clearing NFC change cache...');
-    yield siManager.clearInfoChangeCache();
-    res.status(200).end();
-}));
-app.get('/studentInfo/siCache', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('Getting student info cache...');
-    const entries = yield siManager.getCachedStudentInfo();
-    res.status(200).send(entries).end();
-}));
-app.post('/studentInfo/siCache/rebuild', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('Clearing student info cache...');
-    yield siManager.rebuildStudentInfoCache();
-    res.status(200).end();
-}));
-// ATTENDANCE
-app.get('/attendance/online', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    res.status(200)
-        .send({ online: attdManager.mode === 'ONLINE' })
-        .end();
-}));
-app.post('/attendance/push', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { studentId, dateTime } = req.body;
-    console.log('Pushing attendance:', studentId, dateTime);
-    const date = new Date(dateTime);
-    const formatTwoDigits = (n) => {
-        return n < 10 ? '0' + n : n;
-    };
-    yield attdManager.postAttendanceEntry(studentId, `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`, `${date.getHours() === 12 || date.getHours() === 0 ? 12 : date.getHours() % 12}:${formatTwoDigits(date.getMinutes())} ${date.getHours() >= 12 ? 'PM' : 'AM'}`);
-    res.status(200).end();
-}));
-app.post('/attendance/cache/flush', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('Flushing attendance...');
-    attdManager
-        .flushCachedAttendance()
-        .then(() => {
-        res.status(200).end();
-    })
-        .catch(next);
-}));
-app.get('/attendance/cache', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('Getting attendance cache...');
-    const entries = yield attdManager.getAllCacheEntries();
-    res.status(200).send(entries).end();
-}));
-app.post('/attendance/cache/clear', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('Clearing attendance cache...');
-    yield attdManager.clearAttendanceCache();
-    res.status(200).end();
-}));
+// get back online by resolving a common address
 app.post('/getBackOnline', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        yield (0, promises_1.resolve)('www.google.com');
-        attdManager.mode = 'ONLINE';
-        siManager.mode = 'ONLINE';
-        runOnline();
-    }
-    catch (err) { }
+    yield checkOnline();
     res.status(200).end();
 }));
+// verify admin panel password
 app.get('/adminpanel/verify', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // retrieve password from query
     const { password } = req.query;
     console.log('Admin Panel access: ', process.env.ADMIN_PANEL_PW, password);
+    // send back whether or not the pw is correct
     res.status(200)
         .send(process.env.ADMIN_PANEL_PW === password)
         .end();
 }));
+// error handling
 app.use(handleErrors);
+// start the server
+server.listen(8080, () => {
+    console.log(`listening on *:8080`);
+});
+// ---- NFC PROCESSING ----
+// spawn the python process to communicate rfid data
 console.log(`Running rfid script with python path: ${process.env.PYTHON_PATH}`);
-const rfidProcess = (0, child_process_1.spawn)(process.env.PYTHON_PATH, ['./rfid/rfid.py']);
+const rfidProcess = (0, child_process_1.spawn)(process.env.PYTHON_PATH, ['./rfid/rfid-sim.py']);
 rfidProcess.stdout.on('data', (data) => {
-    socketIO.emit('tag', data.toString());
+    const [type, value] = data.toString().split(':');
+    if (type === 'STAT')
+        socketIO.emit('status', value === 'ONLINE');
+    if (type === 'ID')
+        socketIO.emit('tag', value);
     console.log('RFID Data received: ', data.toString());
 });
-const runOnline = () => {
-    (0, ServiceAccount_1.initiateJWT)();
-    attdManager.loadSheetCache();
-};
-require('dns').resolve('www.google.com', (err) => {
-    if (err) {
-        console.log("Couldn't authorize user. Transferring to offline mode...");
-        attdManager.mode = 'OFFLINE';
-        siManager.mode = 'OFFLINE';
-    }
-    else {
-        runOnline();
-    }
-});
-socketIO.on('connection', (socket) => {
-    console.log('socket connection established');
-});
+// set up online stuff if we're online
+checkOnline();

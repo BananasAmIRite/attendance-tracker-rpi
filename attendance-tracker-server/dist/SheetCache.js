@@ -10,12 +10,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const ServiceAccount_1 = require("./ServiceAccount");
+// in-memory cache for sheets (used for Attendance)
 class SheetCache {
     constructor(sheetId, sheetRange) {
         this.sheetId = sheetId;
         this.sheetRange = sheetRange;
         this.cache = [];
     }
+    // load the values from the sheets into the cache
     load() {
         return __awaiter(this, void 0, void 0, function* () {
             const data = (yield ServiceAccount_1.SheetInstance.spreadsheets.values.get({
@@ -27,6 +29,7 @@ class SheetCache {
             this.cache = data;
         });
     }
+    // update an array of single-celled values
     batchUpdateSingle(data) {
         return __awaiter(this, void 0, void 0, function* () {
             yield ServiceAccount_1.SheetInstance.spreadsheets.values.batchUpdate({
@@ -43,7 +46,8 @@ class SheetCache {
             console.log(this.cache);
         });
     }
-    getData() {
+    // get the cache stored
+    getCache() {
         return this.cache;
     }
 }

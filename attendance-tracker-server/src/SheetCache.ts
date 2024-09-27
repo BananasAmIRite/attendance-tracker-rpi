@@ -1,5 +1,6 @@
 import { SheetInstance } from './ServiceAccount';
 
+// in-memory cache for sheets (used for Attendance)
 export default class SheetCache {
     private cache: string[][];
 
@@ -7,6 +8,7 @@ export default class SheetCache {
         this.cache = [];
     }
 
+    // load the values from the sheets into the cache
     public async load() {
         const data = (
             await SheetInstance.spreadsheets.values.get({
@@ -20,6 +22,7 @@ export default class SheetCache {
         this.cache = data;
     }
 
+    // update an array of single-celled values
     public async batchUpdateSingle(data: { data: { range: string; values: any[][] }; row: number; col: number }[]) {
         await SheetInstance.spreadsheets.values.batchUpdate({
             spreadsheetId: this.sheetId,
@@ -35,7 +38,8 @@ export default class SheetCache {
         console.log(this.cache);
     }
 
-    public getData(): string[][] {
+    // get the cache stored
+    public getCache(): string[][] {
         return this.cache;
     }
 }

@@ -9,12 +9,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.initiateJWT = exports.SheetInstance = exports.serviceAccountAuth = void 0;
+exports.initJWT = exports.SheetInstance = exports.serviceAccountAuth = void 0;
 const google_auth_library_1 = require("google-auth-library");
 const sheets_1 = require("@googleapis/sheets");
 const dotenv_1 = require("dotenv");
 (0, dotenv_1.config)();
-const initiateJWT = () => __awaiter(void 0, void 0, void 0, function* () {
+const initJWT = () => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     console.log('Initiating JWT and SheetInstance');
     exports.serviceAccountAuth = new google_auth_library_1.JWT({
@@ -24,4 +24,4 @@ const initiateJWT = () => __awaiter(void 0, void 0, void 0, function* () {
     });
     exports.SheetInstance = (0, sheets_1.sheets)({ version: 'v4', auth: exports.serviceAccountAuth });
 });
-exports.initiateJWT = initiateJWT;
+exports.initJWT = initJWT;
