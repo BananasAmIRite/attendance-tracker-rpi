@@ -38,6 +38,15 @@ export default class SheetCache {
         console.log(this.cache);
     }
 
+    public async updateSingle(data: { data: { range: string; values: any[][] }; row: number; col: number }) {
+        await SheetInstance.spreadsheets.values.update({
+            spreadsheetId: this.sheetId,
+            requestBody: data.data,
+            valueInputOption: 'RAW',
+        });
+        this.cache[data.row][data.col] = data.data.values[0][0];
+    }
+
     // get the cache stored
     public getCache(): string[][] {
         return this.cache;

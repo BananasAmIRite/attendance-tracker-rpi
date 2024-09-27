@@ -116,7 +116,10 @@ class AttendanceManager {
             }
             console.log('Uploading data...');
             // make request to upload sheet and alter data in memory as well
-            yield this.inSheetCache.batchUpdateSingle(rangesToQuery);
+            if (rangesToQuery.length === 1)
+                yield this.inSheetCache.updateSingle(rangesToQuery[0]);
+            else
+                yield this.inSheetCache.batchUpdateSingle(rangesToQuery);
             console.log(`Uploaded data: ${rangesToQuery.length} value(s) uploaded, ${erroredValues.length} value(s) errored`);
             return erroredValues;
         });

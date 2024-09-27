@@ -120,7 +120,8 @@ class AttendanceManager {
         console.log('Uploading data...');
 
         // make request to upload sheet and alter data in memory as well
-        await this.inSheetCache.batchUpdateSingle(rangesToQuery);
+        if (rangesToQuery.length === 1) await this.inSheetCache.updateSingle(rangesToQuery[0]);
+        else await this.inSheetCache.batchUpdateSingle(rangesToQuery);
         console.log(
             `Uploaded data: ${rangesToQuery.length} value(s) uploaded, ${erroredValues.length} value(s) errored`
         );

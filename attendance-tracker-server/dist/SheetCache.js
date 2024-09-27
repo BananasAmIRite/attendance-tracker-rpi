@@ -46,6 +46,16 @@ class SheetCache {
             console.log(this.cache);
         });
     }
+    updateSingle(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield ServiceAccount_1.SheetInstance.spreadsheets.values.update({
+                spreadsheetId: this.sheetId,
+                requestBody: data.data,
+                valueInputOption: 'RAW',
+            });
+            this.cache[data.row][data.col] = data.data.values[0][0];
+        });
+    }
     // get the cache stored
     getCache() {
         return this.cache;
