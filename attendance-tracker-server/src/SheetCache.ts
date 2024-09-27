@@ -41,7 +41,8 @@ export default class SheetCache {
     public async updateSingle(data: { data: { range: string; values: any[][] }; row: number; col: number }) {
         await SheetInstance.spreadsheets.values.update({
             spreadsheetId: this.sheetId,
-            requestBody: data.data,
+            range: data.data.range,
+            requestBody: { values: data.data.values },
             valueInputOption: 'RAW',
         });
         this.cache[data.row][data.col] = data.data.values[0][0];
