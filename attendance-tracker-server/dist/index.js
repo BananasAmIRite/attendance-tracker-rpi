@@ -20,6 +20,7 @@ const StudentInfoManager_1 = __importDefault(require("./StudentInfoManager"));
 const http_1 = require("http");
 const socket_io_1 = require("socket.io");
 const child_process_1 = require("child_process");
+const ServiceAccount_1 = require("./ServiceAccount");
 const app = (0, express_1.default)();
 const server = (0, http_1.createServer)(app);
 const socketIO = new socket_io_1.Server(server, {
@@ -164,6 +165,16 @@ const rfidProcess = (0, child_process_1.spawn)(process.env.PYTHON_PATH, ['./rfid
 rfidProcess.stdout.on('data', (data) => {
     socketIO.emit('tag', data.toString());
     console.log('RFID Data received: ', data.toString());
+});
+ServiceAccount_1.serviceAccountAuth
+    .authorize()
+    .then((a) => {
+    console.log('Authorized user. ');
+})
+    .catch((err) => {
+    console.log("Couldn't authorize user. Transferring to offline mode...");
+    attdManager.mode = 'OFFLINE';
+    siManager.mode = 'OFFLINE';
 });
 socketIO.on('connection', (socket) => {
     console.log('socket connection established');

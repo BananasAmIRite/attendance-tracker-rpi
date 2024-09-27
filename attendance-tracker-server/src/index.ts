@@ -6,6 +6,7 @@ import StudentInfoManager from './StudentInfoManager';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { spawn } from 'child_process';
+import { serviceAccountAuth } from './ServiceAccount';
 
 const app = express();
 const server = createServer(app);
@@ -191,6 +192,17 @@ rfidProcess.stdout.on('data', (data) => {
     socketIO.emit('tag', data.toString());
     console.log('RFID Data received: ', data.toString());
 });
+
+serviceAccountAuth
+    .authorize()
+    .then((a) => {
+        console.log('Authorized user. ');
+    })
+    .catch((err) => {
+        console.log("Couldn't authorize user. Transferring to offline mode...");
+        attdManager.mode = 'OFFLINE';
+        siManager.mode = 'OFFLINE';
+    });
 
 socketIO.on('connection', (socket) => {
     console.log('socket connection established');
