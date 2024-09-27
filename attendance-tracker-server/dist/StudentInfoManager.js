@@ -51,7 +51,7 @@ class StudentInfoManager {
     }
     getStudentInfo(onlineQualifier, offlineQualifier) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('getting student info...', useSICache);
+            console.log('getting student info...');
             if (this.mode === 'ONLINE' && !useSICache) {
                 let response;
                 try {

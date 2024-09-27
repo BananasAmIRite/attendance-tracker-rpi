@@ -117,7 +117,7 @@ app.get('/attendance/online', (req, res) => __awaiter(void 0, void 0, void 0, fu
 }));
 app.post('/attendance/push', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { studentId, dateTime } = req.body;
-    console.log('Pushing attendance: ', studentId, dateTime);
+    console.log('Pushing attendance:', studentId, dateTime);
     const date = new Date(dateTime);
     const formatTwoDigits = (n) => {
         return n < 10 ? '0' + n : n;

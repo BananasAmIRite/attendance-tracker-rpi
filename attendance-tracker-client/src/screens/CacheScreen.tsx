@@ -14,8 +14,6 @@ export default function CacheScreen() {
     const [attendanceOnline, setAttendanceOnline] = useState(false);
     const [studentInfoOnline, setStudentInfoOnline] = useState(false);
 
-    const { setMessage } = useContext(GlobalMessageContext);
-
     const navigate = useNavigate();
 
     const forceUpdate = () => {

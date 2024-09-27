@@ -4,6 +4,8 @@ import { bindStudentId, getStudentInfo, getStudentInfoByNFCId } from '../server/
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import { MdOutlineCreditScore } from 'react-icons/md';
+import { LoadingButton } from '@mui/lab';
+import UploadIcon from '@mui/icons-material/Upload';
 
 export interface NFCUploadScannerProps {
     handleCodeScan: (res: string) => Promise<boolean>;
@@ -44,7 +46,10 @@ export default function NFCUploadScanner(props: NFCUploadScannerProps) {
         }
     };
 
+    const [nfcBindLoading, setNfcBindLoading] = useState(false);
+
     const handleCode = async () => {
+        setNfcBindLoading(true);
         const studentId = stdId;
         setStdId('');
         const student = await getStudentInfo(studentId);
@@ -55,6 +60,8 @@ export default function NFCUploadScanner(props: NFCUploadScannerProps) {
             await bindStudentId(studentId, nfcId);
             await handleScan(nfcId, studentId);
         }
+
+        setNfcBindLoading(false);
     };
 
     const handleScan = async (nfcId: string, id: string) => {
@@ -90,9 +97,15 @@ export default function NFCUploadScanner(props: NFCUploadScannerProps) {
                 autoComplete='off'
             />
             <br />
-            <Button onClick={handleCode} variant='contained'>
+            <LoadingButton
+                loading={nfcBindLoading}
+                loadingPosition='start'
+                startIcon={<UploadIcon />}
+                onClick={handleCode}
+                variant='contained'
+            >
                 Submit
-            </Button>
+            </LoadingButton>
         </div>
     ) : uploadState === 'INPUT_FAILURE' ? (
         <div

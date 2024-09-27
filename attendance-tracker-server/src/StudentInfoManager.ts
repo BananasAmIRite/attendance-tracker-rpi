@@ -59,7 +59,7 @@ export default class StudentInfoManager {
         onlineQualifier: (val: any[]) => boolean,
         offlineQualifier: (info: StudentInfo) => boolean
     ): Promise<StudentInfo | null> {
-        console.log('getting student info...', useSICache);
+        console.log('getting student info...');
         if (this.mode === 'ONLINE' && !useSICache) {
             let response;
             try {

@@ -1,11 +1,13 @@
 import { Attendance } from '@prisma/client';
 import { SheetInstance } from './ServiceAccount';
 import prisma from './PrismaClient';
+import { createSingleA1Range } from './util/SheetUtils';
 
 export interface AttendanceEntry {
     studentId: string;
     date: string;
     time: string;
+    id?: number;
 }
 
 const useAttdCache = process.env.USE_ATTD_CACHE_DEFAULT === 'true';
@@ -13,7 +15,8 @@ console.log(`Config: Using attendance cache by default set to ${useAttdCache}`);
 
 export default class AttendanceManager {
     private sheetId: string = process.env.ATTD_SHEET_ID as string;
-    private sheetRange: string = process.env.ATTD_SHEET_RANGE as string;
+    private inSheetRange: string = process.env.ATTD_SHEET_RANGE_IN as string;
+    private outSheetRange: string = process.env.ATTD_SHEET_RANGE_OUT as string;
 
     public mode: 'ONLINE' | 'OFFLINE' = 'ONLINE';
 
@@ -22,48 +25,83 @@ export default class AttendanceManager {
     public async postAttendanceEntry(studentId: string, date: string, time: string) {
         if (this.mode === 'ONLINE' && !useAttdCache) {
             try {
-                await SheetInstance.spreadsheets.values.append({
-                    spreadsheetId: this.sheetId,
-                    range: this.sheetRange,
-                    valueInputOption: 'RAW',
-                    requestBody: {
-                        values: [[studentId, date, time]],
-                    },
-                });
+                const errorVals = await this.postOnlineAttendanceEntries([{ studentId, date, time }]);
+                if (errorVals.length > 0)
+                    throw new Error('Attendance uploading failed. Does this date exist on the sheet?');
                 console.log(`Successfully posted attendance entry: ${studentId}, ${date}, ${time}`);
             } catch (err) {
                 console.log('Error occurred posting attendance entry. Switching to offline mode');
                 console.log(`Error: ${err}`);
                 this.mode = 'OFFLINE';
-                this.postAttendanceEntry(studentId, date, time);
+                await this.postAttendanceEntry(studentId, date, time);
             }
         } else {
-            this.addCacheEntry({ studentId, date, time });
+            await this.addCacheEntry({ studentId, date, time });
             console.log('Attendance entry appended to cache. ');
         }
     }
 
-    private async postOnlineAttendanceEntries(entries: AttendanceEntry[]) {
-        try {
-            await SheetInstance.spreadsheets.values.append({
+    private async postOnlineAttendanceEntries(entries: AttendanceEntry[]): Promise<AttendanceEntry[]> {
+        // get dates and indices for each date
+        console.log('Getting attendance sheet data');
+        const attdSheetData = (
+            await SheetInstance.spreadsheets.values.get({
                 spreadsheetId: this.sheetId,
-                range: this.sheetRange,
-                valueInputOption: 'RAW',
-                requestBody: {
-                    values: entries.map((e) => [e.studentId, e.date, e.time]),
-                },
+                range: this.inSheetRange,
+            })
+        ).data.values;
+        console.log('Retrieve attendance sheet data. Parsing...');
+        const datesArr = attdSheetData?.[0];
+        if (!datesArr) throw new Error("Dates array doesn't have any values :(");
+        const dates = new Set(entries.map((e) => e.date));
+        const dateIndices = Array.from(dates).map((e) => datesArr.findIndex((f) => f === e));
+        const dateIndexMap = Array.from(dates).map((e, i) => ({ date: e, index: dateIndices[i] }));
+
+        // get student ids as well
+        const students = attdSheetData.map((e) => e[0]);
+        if (!students) throw new Error('No students found');
+
+        const erroredValues: AttendanceEntry[] = [];
+        const rangesToQuery: { range: string; values: any[][] }[] = [];
+
+        // go through each entry and find row + column
+        for (const entry of entries) {
+            const row = students.findIndex((e) => e === entry.studentId);
+            const col = dateIndexMap.find((e) => e.date === entry.date)!.index;
+            if (col === -1) {
+                // date not found
+                erroredValues.push(entry);
+                continue;
+            }
+
+            const sheetRange = attdSheetData[row][col] ? this.outSheetRange : this.inSheetRange; // use the scan out sheet if I already scanned in
+            const range = createSingleA1Range(sheetRange, row, col);
+            // add range to list of ranges to use
+            rangesToQuery.push({
+                range,
+                values: [[entry.time]],
             });
-        } catch (err: any) {
-            console.log(`Error posting online attendance entry: ${err}`);
-            throw err;
         }
+
+        console.log('Uploading data...');
+
+        await SheetInstance.spreadsheets.values.batchUpdate({
+            spreadsheetId: this.sheetId,
+            requestBody: {
+                data: rangesToQuery,
+                valueInputOption: 'RAW',
+            },
+        });
+        console.log('Uploaded data.');
+
+        return erroredValues;
     }
 
     public async testOnlineStatus(): Promise<boolean> {
         try {
             await SheetInstance.spreadsheets.values.get({
                 spreadsheetId: this.sheetId,
-                range: this.sheetRange,
+                range: this.inSheetRange,
             });
             this.mode = 'ONLINE';
             return true;
@@ -71,36 +109,6 @@ export default class AttendanceManager {
             this.mode = 'OFFLINE';
             return false;
         }
-    }
-
-    public async getAttendanceEntries(studentId: string) {
-        if (this.mode === 'OFFLINE') return [];
-        let response;
-        try {
-            response = await SheetInstance.spreadsheets.values.get({
-                spreadsheetId: this.sheetId,
-                range: this.sheetRange,
-            });
-            console.log('Got attendance entries successfully');
-        } catch (err) {
-            this.mode = 'OFFLINE';
-            return [];
-        }
-
-        const values = response.data.values;
-        const entries: AttendanceEntry[] = [];
-
-        if (!values) return [];
-        for (const row of values) {
-            if (row[0] !== studentId) continue;
-            entries.push({
-                studentId: row[0],
-                date: row[1],
-                time: row[2],
-            });
-        }
-
-        return entries;
     }
 
     public async getCachedAttendance(): Promise<AttendanceEntry[]> {
@@ -112,6 +120,7 @@ export default class AttendanceManager {
                 studentId: attd.studentId,
                 date: attd.date,
                 time: attd.time,
+                id: attd.id,
             });
         return attdEntries;
     }
@@ -120,15 +129,22 @@ export default class AttendanceManager {
         const entries = await this.getCachedAttendance();
         try {
             console.log(`Flushing cached attendance...`);
-            await this.postOnlineAttendanceEntries(entries);
-            console.log(`Flushed cached attendance`);
+            const missedEntries = await this.postOnlineAttendanceEntries(entries);
+            console.log(`Flushed cached attendance. There are ${missedEntries.length} entries left. `);
+
+            console.log('Clearing attendance cache...');
+            await prisma.attendance.deleteMany({
+                where: {
+                    id: {
+                        notIn: missedEntries.map((e) => e.id ?? -1),
+                    },
+                },
+            });
+            console.log('Cleared attendance cache.');
         } catch (err) {
             console.log('Error flushing cached attendance. ');
             throw err;
         }
-
-        console.log('Clearing attendance cache...');
-        await this.clearAttendanceCache();
     }
 
     private async addCacheEntry(entry: AttendanceEntry) {

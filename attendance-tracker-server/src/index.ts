@@ -129,7 +129,7 @@ app.get('/attendance/online', async (req, res) => {
 app.post('/attendance/push', async (req, res) => {
     const { studentId, dateTime } = req.body;
 
-    console.log('Pushing attendance: ', studentId, dateTime);
+    console.log('Pushing attendance:', studentId, dateTime);
     const date = new Date(dateTime);
     const formatTwoDigits = (n: number) => {
         return n < 10 ? '0' + n : n;
