@@ -6,7 +6,8 @@ import StudentInfoManager from './StudentInfoManager';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { spawn } from 'child_process';
-import { serviceAccountAuth } from './ServiceAccount';
+import { initiateJWT } from './ServiceAccount';
+import { resolve } from 'dns/promises';
 
 const app = express();
 const server = createServer(app);
@@ -169,10 +170,12 @@ app.post('/attendance/cache/clear', async (req, res) => {
 });
 
 app.post('/getBackOnline', async (req, res) => {
-    attdManager.mode = 'ONLINE';
-    siManager.mode = 'ONLINE';
-    await siManager.loadAllStudentInfo();
-    await attdManager.testOnlineStatus();
+    try {
+        await resolve('www.google.com');
+        attdManager.mode = 'ONLINE';
+        siManager.mode = 'ONLINE';
+        runOnline();
+    } catch (err) {}
     res.status(200).end();
 });
 
@@ -193,16 +196,20 @@ rfidProcess.stdout.on('data', (data) => {
     console.log('RFID Data received: ', data.toString());
 });
 
-serviceAccountAuth
-    .authorize()
-    .then((a) => {
-        console.log('Authorized user. ');
-    })
-    .catch((err) => {
+const runOnline = () => {
+    initiateJWT();
+    attdManager.loadSheetCache();
+};
+
+require('dns').resolve('www.google.com', (err: any) => {
+    if (err) {
         console.log("Couldn't authorize user. Transferring to offline mode...");
         attdManager.mode = 'OFFLINE';
         siManager.mode = 'OFFLINE';
-    });
+    } else {
+        runOnline();
+    }
+});
 
 socketIO.on('connection', (socket) => {
     console.log('socket connection established');

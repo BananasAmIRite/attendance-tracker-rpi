@@ -1,12 +1,18 @@
 import { JWT } from 'google-auth-library';
-import { sheets } from '@googleapis/sheets';
+import { sheets, sheets_v4 } from '@googleapis/sheets';
 import { config } from 'dotenv';
 config();
 
-export const serviceAccountAuth = new JWT({
-    email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-    key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-});
+export let serviceAccountAuth: JWT;
 
-export const SheetInstance = sheets({ version: 'v4', auth: serviceAccountAuth });
+export let SheetInstance: sheets_v4.Sheets;
+
+export const initiateJWT = async () => {
+    console.log('Initiating JWT and SheetInstance');
+    serviceAccountAuth = new JWT({
+        email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+        key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
+    SheetInstance = sheets({ version: 'v4', auth: serviceAccountAuth });
+};

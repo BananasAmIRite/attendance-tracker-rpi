@@ -12,9 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ServiceAccount_1 = require("./ServiceAccount");
 const PrismaClient_1 = __importDefault(require("./PrismaClient"));
 const SheetUtils_1 = require("./util/SheetUtils");
+const SheetCache_1 = __importDefault(require("./SheetCache"));
 const useAttdCache = process.env.USE_ATTD_CACHE_DEFAULT === 'true';
 console.log(`Config: Using attendance cache by default set to ${useAttdCache}`);
 class AttendanceManager {
@@ -23,6 +23,14 @@ class AttendanceManager {
         this.inSheetRange = process.env.ATTD_SHEET_RANGE_IN;
         this.outSheetRange = process.env.ATTD_SHEET_RANGE_OUT;
         this.mode = 'ONLINE';
+    }
+    loadSheetCache() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.inSheetCache = new SheetCache_1.default(this.sheetId, this.inSheetRange);
+            console.log('Getting attendance sheet data');
+            yield this.inSheetCache.load();
+            console.log('Retrieved attendance sheet data. ');
+        });
     }
     postAttendanceEntry(studentId, date, time) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -48,14 +56,9 @@ class AttendanceManager {
     }
     postOnlineAttendanceEntries(entries) {
         return __awaiter(this, void 0, void 0, function* () {
+            const attdSheetData = this.inSheetCache.getData();
             // get dates and indices for each date
-            console.log('Getting attendance sheet data');
-            const attdSheetData = (yield ServiceAccount_1.SheetInstance.spreadsheets.values.get({
-                spreadsheetId: this.sheetId,
-                range: this.inSheetRange,
-            })).data.values;
-            console.log('Retrieve attendance sheet data. Parsing...');
-            const datesArr = attdSheetData === null || attdSheetData === void 0 ? void 0 : attdSheetData[0];
+            const datesArr = attdSheetData[0];
             if (!datesArr)
                 throw new Error("Dates array doesn't have any values :(");
             const dates = new Set(entries.map((e) => e.date));
@@ -76,7 +79,8 @@ class AttendanceManager {
                     erroredValues.push(entry);
                     continue;
                 }
-                const sheetRange = attdSheetData[row][col] || rangesToQuery.findIndex((e) => e.row === row && e.col === col)
+                console.log(attdSheetData[row][col], rangesToQuery.findIndex((e) => e.row === row && e.col === col));
+                const sheetRange = attdSheetData[row][col] || rangesToQuery.findIndex((e) => e.row === row && e.col === col) !== -1
                     ? this.outSheetRange
                     : this.inSheetRange; // use the scan out sheet if I already scanned in
                 const range = (0, SheetUtils_1.createSingleA1Range)(sheetRange, row, col);
@@ -91,13 +95,7 @@ class AttendanceManager {
                 });
             }
             console.log('Uploading data...');
-            yield ServiceAccount_1.SheetInstance.spreadsheets.values.batchUpdate({
-                spreadsheetId: this.sheetId,
-                requestBody: {
-                    data: rangesToQuery.map((e) => e.data),
-                    valueInputOption: 'RAW',
-                },
-            });
+            yield this.inSheetCache.batchUpdateSingle(rangesToQuery);
             console.log('Uploaded data.');
             return erroredValues;
         });
@@ -105,10 +103,7 @@ class AttendanceManager {
     testOnlineStatus() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield ServiceAccount_1.SheetInstance.spreadsheets.values.get({
-                    spreadsheetId: this.sheetId,
-                    range: this.inSheetRange,
-                });
+                yield this.loadSheetCache();
                 this.mode = 'ONLINE';
                 return true;
             }

@@ -2,6 +2,7 @@ import { Attendance } from '@prisma/client';
 import { SheetInstance } from './ServiceAccount';
 import prisma from './PrismaClient';
 import { createSingleA1Range } from './util/SheetUtils';
+import SheetCache from './SheetCache';
 
 export interface AttendanceEntry {
     studentId: string;
@@ -18,9 +19,18 @@ export default class AttendanceManager {
     private inSheetRange: string = process.env.ATTD_SHEET_RANGE_IN as string;
     private outSheetRange: string = process.env.ATTD_SHEET_RANGE_OUT as string;
 
+    private inSheetCache!: SheetCache;
+
     public mode: 'ONLINE' | 'OFFLINE' = 'ONLINE';
 
     public constructor() {}
+
+    public async loadSheetCache() {
+        this.inSheetCache = new SheetCache(this.sheetId, this.inSheetRange);
+        console.log('Getting attendance sheet data');
+        await this.inSheetCache.load();
+        console.log('Retrieved attendance sheet data. ');
+    }
 
     public async postAttendanceEntry(studentId: string, date: string, time: string) {
         if (this.mode === 'ONLINE' && !useAttdCache) {
@@ -42,16 +52,10 @@ export default class AttendanceManager {
     }
 
     private async postOnlineAttendanceEntries(entries: AttendanceEntry[]): Promise<AttendanceEntry[]> {
+        const attdSheetData = this.inSheetCache.getData();
+
         // get dates and indices for each date
-        console.log('Getting attendance sheet data');
-        const attdSheetData = (
-            await SheetInstance.spreadsheets.values.get({
-                spreadsheetId: this.sheetId,
-                range: this.inSheetRange,
-            })
-        ).data.values;
-        console.log('Retrieve attendance sheet data. Parsing...');
-        const datesArr = attdSheetData?.[0];
+        const datesArr = attdSheetData[0];
         if (!datesArr) throw new Error("Dates array doesn't have any values :(");
         const dates = new Set(entries.map((e) => e.date));
         const dateIndices = Array.from(dates).map((e) => datesArr.findIndex((f) => f === e));
@@ -74,8 +78,13 @@ export default class AttendanceManager {
                 continue;
             }
 
+            console.log(
+                attdSheetData[row][col],
+                rangesToQuery.findIndex((e) => e.row === row && e.col === col)
+            );
+
             const sheetRange =
-                attdSheetData[row][col] || rangesToQuery.findIndex((e) => e.row === row && e.col === col)
+                attdSheetData[row][col] || rangesToQuery.findIndex((e) => e.row === row && e.col === col) !== -1
                     ? this.outSheetRange
                     : this.inSheetRange; // use the scan out sheet if I already scanned in
             const range = createSingleA1Range(sheetRange, row, col);
@@ -92,13 +101,7 @@ export default class AttendanceManager {
 
         console.log('Uploading data...');
 
-        await SheetInstance.spreadsheets.values.batchUpdate({
-            spreadsheetId: this.sheetId,
-            requestBody: {
-                data: rangesToQuery.map((e) => e.data),
-                valueInputOption: 'RAW',
-            },
-        });
+        await this.inSheetCache.batchUpdateSingle(rangesToQuery);
         console.log('Uploaded data.');
 
         return erroredValues;
@@ -106,10 +109,7 @@ export default class AttendanceManager {
 
     public async testOnlineStatus(): Promise<boolean> {
         try {
-            await SheetInstance.spreadsheets.values.get({
-                spreadsheetId: this.sheetId,
-                range: this.inSheetRange,
-            });
+            await this.loadSheetCache();
             this.mode = 'ONLINE';
             return true;
         } catch (err) {

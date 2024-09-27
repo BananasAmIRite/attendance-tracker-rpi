@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect } from 'react';
 import { DisplayedStudentInfo, StudentInfo } from '../types/UserInfoTypes';
-import { getStudentInfo, loadStudentInfo } from '../server/Student';
+import { getSIChangesCache, getStudentInfo, loadStudentInfo } from '../server/Student';
 import { postAttendanceEntry, queryPasswordCorrect } from '../server/Attendance';
 import StudentInfoDisplay from '../components/StudentInfoDisplay';
 import NFCUploadScanner from '../components/NFCUploadScanner';
@@ -89,9 +89,13 @@ export default function UserScanScreen() {
     const validateId = (id: string): boolean => !isNaN(parseInt(id));
 
     useEffect(() => {
-        setDisplayUser('LOADING');
-        loadStudentInfo().then(() => {
-            setDisplayUser(false);
+        getSIChangesCache().then((e) => {
+            if (e.length === 0) {
+                setDisplayUser('LOADING');
+                loadStudentInfo().then(() => {
+                    setDisplayUser(false);
+                });
+            }
         });
     }, []);
 
