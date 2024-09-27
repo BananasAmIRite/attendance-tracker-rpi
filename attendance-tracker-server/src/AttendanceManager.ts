@@ -62,7 +62,7 @@ export default class AttendanceManager {
         if (!students) throw new Error('No students found');
 
         const erroredValues: AttendanceEntry[] = [];
-        const rangesToQuery: { range: string; values: any[][]; row: number; col: number }[] = [];
+        const rangesToQuery: { data: { range: string; values: any[][] }; row: number; col: number }[] = [];
 
         // go through each entry and find row + column
         for (const entry of entries) {
@@ -81,8 +81,10 @@ export default class AttendanceManager {
             const range = createSingleA1Range(sheetRange, row, col);
             // add range to list of ranges to use
             rangesToQuery.push({
-                range,
-                values: [[entry.time]],
+                data: {
+                    range,
+                    values: [[entry.time]],
+                },
                 row,
                 col,
             });
@@ -93,7 +95,7 @@ export default class AttendanceManager {
         await SheetInstance.spreadsheets.values.batchUpdate({
             spreadsheetId: this.sheetId,
             requestBody: {
-                data: rangesToQuery,
+                data: rangesToQuery.map((e) => e.data),
                 valueInputOption: 'RAW',
             },
         });

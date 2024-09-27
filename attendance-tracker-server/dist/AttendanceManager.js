@@ -82,8 +82,10 @@ class AttendanceManager {
                 const range = (0, SheetUtils_1.createSingleA1Range)(sheetRange, row, col);
                 // add range to list of ranges to use
                 rangesToQuery.push({
-                    range,
-                    values: [[entry.time]],
+                    data: {
+                        range,
+                        values: [[entry.time]],
+                    },
                     row,
                     col,
                 });
@@ -92,7 +94,7 @@ class AttendanceManager {
             yield ServiceAccount_1.SheetInstance.spreadsheets.values.batchUpdate({
                 spreadsheetId: this.sheetId,
                 requestBody: {
-                    data: rangesToQuery,
+                    data: rangesToQuery.map((e) => e.data),
                     valueInputOption: 'RAW',
                 },
             });
