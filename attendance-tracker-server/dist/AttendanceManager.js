@@ -76,12 +76,16 @@ class AttendanceManager {
                     erroredValues.push(entry);
                     continue;
                 }
-                const sheetRange = attdSheetData[row][col] ? this.outSheetRange : this.inSheetRange; // use the scan out sheet if I already scanned in
+                const sheetRange = attdSheetData[row][col] || rangesToQuery.findIndex((e) => e.row === row && e.col === col)
+                    ? this.outSheetRange
+                    : this.inSheetRange; // use the scan out sheet if I already scanned in
                 const range = (0, SheetUtils_1.createSingleA1Range)(sheetRange, row, col);
                 // add range to list of ranges to use
                 rangesToQuery.push({
                     range,
                     values: [[entry.time]],
+                    row,
+                    col,
                 });
             }
             console.log('Uploading data...');

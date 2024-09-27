@@ -62,7 +62,7 @@ export default class AttendanceManager {
         if (!students) throw new Error('No students found');
 
         const erroredValues: AttendanceEntry[] = [];
-        const rangesToQuery: { range: string; values: any[][] }[] = [];
+        const rangesToQuery: { range: string; values: any[][]; row: number; col: number }[] = [];
 
         // go through each entry and find row + column
         for (const entry of entries) {
@@ -74,12 +74,17 @@ export default class AttendanceManager {
                 continue;
             }
 
-            const sheetRange = attdSheetData[row][col] ? this.outSheetRange : this.inSheetRange; // use the scan out sheet if I already scanned in
+            const sheetRange =
+                attdSheetData[row][col] || rangesToQuery.findIndex((e) => e.row === row && e.col === col)
+                    ? this.outSheetRange
+                    : this.inSheetRange; // use the scan out sheet if I already scanned in
             const range = createSingleA1Range(sheetRange, row, col);
             // add range to list of ranges to use
             rangesToQuery.push({
                 range,
                 values: [[entry.time]],
+                row,
+                col,
             });
         }
 
