@@ -13,8 +13,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const PrismaClient_1 = __importDefault(require("../PrismaClient"));
+// stores and retrieves cached data for student information
 class StudentInfoDBCache {
-    constructor() { }
+    // clears all data in student info cache
     clearInfoChangeCache() {
         return __awaiter(this, void 0, void 0, function* () {
             yield PrismaClient_1.default.nFCChange.deleteMany({
@@ -22,9 +23,12 @@ class StudentInfoDBCache {
             });
         });
     }
+    // get all cached data
     getCachedStudentInfo() {
         return __awaiter(this, void 0, void 0, function* () {
+            // get entries from database
             const entries = yield PrismaClient_1.default.studentInformation.findMany();
+            // convert them to StudentInfo's
             const infoEntries = [];
             for (const info of entries)
                 infoEntries.push({
@@ -37,6 +41,7 @@ class StudentInfoDBCache {
             return infoEntries;
         });
     }
+    // clear cached data database
     deleteAll() {
         return __awaiter(this, void 0, void 0, function* () {
             yield PrismaClient_1.default.studentInformation.deleteMany({

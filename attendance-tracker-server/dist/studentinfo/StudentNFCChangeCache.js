@@ -13,12 +13,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const PrismaClient_1 = __importDefault(require("../PrismaClient"));
+// stores failed NFC change requests for later upload
 class StudentNFCChangeCache {
+    // get all pending nfc changes
     getCachedNFCChanges() {
         return __awaiter(this, void 0, void 0, function* () {
             return yield PrismaClient_1.default.nFCChange.findMany();
         });
     }
+    // delete all pending nfc changes
     deleteAll() {
         return __awaiter(this, void 0, void 0, function* () {
             yield PrismaClient_1.default.nFCChange.deleteMany({

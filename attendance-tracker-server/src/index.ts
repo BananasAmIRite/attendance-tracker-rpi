@@ -41,8 +41,8 @@ const checkOnline = async () => {
         attdManager.mode = 'ONLINE';
         siManager.mode = 'ONLINE';
         // set up online stuff
-        initJWT();
-        attdManager.loadSheetCache();
+        await initJWT();
+        await attdManager.loadSheetCache();
     } catch (err) {
         attdManager.mode = 'OFFLINE';
         siManager.mode = 'OFFLINE';

@@ -1,0 +1,20 @@
+{
+    "name": "attendance-tracker-rpi",
+    "version": "1.0.0",
+    "description": "This is an attendance tracker designed to run on a Raspberry PI using unique IDs on an RC522 NFC reader. However, this can be run on any other full operating system as well.",
+    "main": "index.js",
+    "directories": {
+        "doc": "docs"
+    },
+    "scripts": {
+        "start:frontend": "cd ./attendance-tracker-client && npm run start",
+        "start:backend": "cd ./attendance-tracker-server && npm run start",
+        "start": "concurrently --names FRONT,BACK \"npm run start:frontend\" \"npm run start:backend\""
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "concurrently": "^9.0.1"
+    }
+}

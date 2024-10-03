@@ -49,8 +49,8 @@ const checkOnline = () => __awaiter(void 0, void 0, void 0, function* () {
         AttendanceManager_1.default.mode = 'ONLINE';
         StudentInfoManager_1.default.mode = 'ONLINE';
         // set up online stuff
-        (0, ServiceAccount_1.initJWT)();
-        AttendanceManager_1.default.loadSheetCache();
+        yield (0, ServiceAccount_1.initJWT)();
+        yield AttendanceManager_1.default.loadSheetCache();
     }
     catch (err) {
         AttendanceManager_1.default.mode = 'OFFLINE';
