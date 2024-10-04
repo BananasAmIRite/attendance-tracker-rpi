@@ -32,7 +32,7 @@
         "build": "set GENERATE_SOURCEMAP=false && react-scripts --max_old_space_size=1024 build",
         "test": "react-scripts test",
         "eject": "react-scripts eject",
-        "start": "npx serve -s build"
+        "start": "npx http-server build --port=3000"
     },
     "eslintConfig": {
         "extends": [
