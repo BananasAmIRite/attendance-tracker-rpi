@@ -12,10 +12,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const PrismaClient_1 = __importDefault(require("../PrismaClient"));
+exports.AttendanceManager = void 0;
 const SheetUtils_1 = require("../util/SheetUtils");
 const SheetCache_1 = __importDefault(require("../SheetCache"));
 const AttendanceDBCache_1 = __importDefault(require("./AttendanceDBCache"));
+const AttendanceCacheFlusher_1 = __importDefault(require("./AttendanceCacheFlusher"));
 // config for whether to automatically upload to the attendance cache by default or not
 const useAttdCache = process.env.USE_ATTD_CACHE_DEFAULT === 'true';
 console.log(`Config: Using attendance cache by default set to ${useAttdCache}`);
@@ -28,6 +29,7 @@ class AttendanceManager {
         this.outSheetRange = process.env.ATTD_SHEET_RANGE_OUT;
         // database cache for any values that failed to upload
         this.dbCache = new AttendanceDBCache_1.default();
+        this.cacheFlusher = new AttendanceCacheFlusher_1.default(this);
         /** attendance upload mode
          *
          * 'ONLINE' - upload directly to google sheets
@@ -35,6 +37,8 @@ class AttendanceManager {
          *
          **/
         this.mode = 'ONLINE';
+        if (useAttdCache)
+            this.cacheFlusher.startAutomaticFlush();
     }
     // load in-memory cache of the attendance sheet
     loadSheetCache() {
@@ -52,9 +56,9 @@ class AttendanceManager {
             if (this.mode === 'ONLINE' && !useAttdCache) {
                 try {
                     // upload online entry
-                    const errorVals = yield this.postOnlineAttendanceEntries([{ studentId, date, time }]);
+                    const uploadedValues = yield this.postOnlineAttendanceEntries([{ studentId, date, time }]);
                     // switch to offline if there exists a value that didn't make it to the sheet
-                    if (errorVals.length > 0)
+                    if (uploadedValues.length === 0)
                         throw new Error('Attendance uploading failed. Does this date exist on the sheet?');
                     console.log(`Successfully posted attendance entry: ${studentId}, ${date}, ${time}`);
                 }
@@ -68,9 +72,15 @@ class AttendanceManager {
             }
             else {
                 // offline mode; append entry to attendance db cache
-                yield this.dbCache.addCacheEntry({ studentId, date, time });
+                yield this.postOfflineCacheEntry({ studentId, date, time });
                 console.log('Attendance entry appended to cache. ');
             }
+        });
+    }
+    postOfflineCacheEntry(entry) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // runs into concurrency issues? (nvm)
+            yield this.dbCache.addCacheEntry(entry);
         });
     }
     // post an entry ONLINE
@@ -88,17 +98,14 @@ class AttendanceManager {
             const students = attdSheetData.map((e) => e[0]);
             if (!students)
                 throw new Error('No students found');
-            const erroredValues = [];
+            const uploadedValues = [];
             const rangesToQuery = [];
             // go through each entry and find row + column
             for (const entry of entries) {
                 const row = students.findIndex((e) => e === entry.studentId);
                 const col = dateIndexMap.find((e) => e.date === entry.date).index;
-                if (col === -1) {
-                    // date not found, don't upload value and append to the values that errored
-                    erroredValues.push(entry);
-                    continue;
-                }
+                if (col === -1)
+                    continue; // date not found, don't upload value and append to the values that errored
                 // use the scan out sheet if I already scanned in or there's already a value for scanning in
                 const sheetRange = attdSheetData[row][col] || rangesToQuery.findIndex((e) => e.row === row && e.col === col) !== -1
                     ? this.outSheetRange
@@ -113,6 +120,7 @@ class AttendanceManager {
                     row,
                     col,
                 });
+                uploadedValues.push(entry);
             }
             console.log('Uploading data...');
             // make request to upload sheet and alter data in memory as well
@@ -120,8 +128,8 @@ class AttendanceManager {
                 yield this.inSheetCache.updateSingle(rangesToQuery[0]);
             else
                 yield this.inSheetCache.batchUpdateSingle(rangesToQuery);
-            console.log(`Uploaded data: ${rangesToQuery.length} value(s) uploaded, ${erroredValues.length} value(s) errored`);
-            return erroredValues;
+            console.log(`Uploaded data: ${rangesToQuery.length} value(s) uploaded, ${entries.length - uploadedValues.length} value(s) errored`);
+            return uploadedValues;
         });
     }
     // check whether or not we're online by loading the sheet cache
@@ -138,33 +146,7 @@ class AttendanceManager {
             }
         });
     }
-    // flush all cached attendance in the attendance cache db by posting entries online
-    flushCachedAttendance() {
-        return __awaiter(this, void 0, void 0, function* () {
-            // get entries in the db cache
-            const entries = yield this.dbCache.getCachedAttendance();
-            try {
-                console.log(`Flushing cached attendance...`);
-                // post all entries in a batch
-                const missedEntries = yield this.postOnlineAttendanceEntries(entries);
-                console.log(`Flushed cached attendance. There are ${missedEntries.length} entries left. `);
-                console.log('Clearing attendance cache...');
-                // delete all posted entries from db cache
-                yield PrismaClient_1.default.attendance.deleteMany({
-                    where: {
-                        id: {
-                            notIn: missedEntries.map((e) => { var _a; return (_a = e.id) !== null && _a !== void 0 ? _a : -1; }),
-                        },
-                    },
-                });
-                console.log('Cleared attendance cache.');
-            }
-            catch (err) {
-                console.log('Error flushing cached attendance. ');
-                throw err;
-            }
-        });
-    }
 }
+exports.AttendanceManager = AttendanceManager;
 const attdManager = new AttendanceManager();
 exports.default = attdManager;

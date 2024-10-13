@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import attdManager from '../../../attendance/AttendanceManager';
 
+// router for /attendance/cache/
 const AttendanceCacheRouter = Router();
 
 AttendanceCacheRouter.get('/', async (req, res) => {
@@ -11,8 +12,8 @@ AttendanceCacheRouter.get('/', async (req, res) => {
 
 AttendanceCacheRouter.post('/flush', async (req, res, next) => {
     console.log('Flushing attendance...');
-    attdManager
-        .flushCachedAttendance()
+    attdManager.cacheFlusher
+        .flush()
         .then(() => {
             res.status(200).end();
         })

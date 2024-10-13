@@ -43,9 +43,9 @@ class SheetCache {
             for (const datum of data) {
                 this.cache[datum.row][datum.col] = datum.data.values[0][0];
             }
-            console.log(this.cache);
         });
     }
+    // update a single cell; does not block as much as batchUpdateSingle
     updateSingle(data) {
         return __awaiter(this, void 0, void 0, function* () {
             yield ServiceAccount_1.SheetInstance.spreadsheets.values.update({

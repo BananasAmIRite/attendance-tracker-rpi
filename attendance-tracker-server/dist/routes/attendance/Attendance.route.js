@@ -15,13 +15,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const AttendanceManager_1 = __importDefault(require("../../attendance/AttendanceManager"));
 const AttendanceCache_route_1 = __importDefault(require("./cache/AttendanceCache.route"));
+// router for /attendance/
 const AttendanceRouter = (0, express_1.Router)();
+// link cache router
 AttendanceRouter.use('/cache', AttendanceCache_route_1.default);
+// get online mode
 AttendanceRouter.get('/online', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.status(200)
         .send({ online: AttendanceManager_1.default.mode === 'ONLINE' })
         .end();
 }));
+// push a single attendance entry
 AttendanceRouter.post('/push', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { studentId, dateTime } = req.body;
     console.log('Pushing attendance:', studentId, dateTime);

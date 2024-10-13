@@ -9,6 +9,7 @@ export interface StudentInfoProps {
     action: 'SCAN_IN' | 'SCAN_OUT';
 }
 
+// display for student info
 export default function StudentInfoDisplay(props: StudentInfoProps) {
     return (
         <div

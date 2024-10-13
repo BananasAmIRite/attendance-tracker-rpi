@@ -11,12 +11,11 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import TextField from '@mui/material/TextField';
 import { DialogActions } from '@mui/material';
 
 export default function UserScanScreen() {
-    const { message, setMessage } = useContext(GlobalMessageContext);
+    const { setMessage } = useContext(GlobalMessageContext);
 
     const [displayUser, setDisplayUser] = useState<true | false | 'LOADING'>(false);
     const [lastId, setLastId] = useState('');
@@ -41,9 +40,8 @@ export default function UserScanScreen() {
     };
 
     const handleCodeScan = (id: string) =>
-        new Promise<boolean>(async (res, rej) => {
+        new Promise<boolean>(async (res) => {
             console.log('handling code: ' + id);
-            // if (!validateId(id)) return res(false);
 
             console.log(displayUser, id, lastId);
             if (displayUser) return res(false); // disable scanning when user is being displayed
@@ -85,8 +83,6 @@ export default function UserScanScreen() {
                 }
             );
         });
-
-    const validateId = (id: string): boolean => !isNaN(parseInt(id));
 
     useEffect(() => {
         getSIChangesCache().then((e) => {
@@ -190,7 +186,7 @@ export default function UserScanScreen() {
                         id='pw'
                         name='pw'
                         label='Password'
-                        type='text'
+                        type='password'
                         fullWidth
                         variant='standard'
                         autoComplete='off'

@@ -2,16 +2,20 @@ import { Router } from 'express';
 import attdManager from '../../attendance/AttendanceManager';
 import AttendanceCacheRouter from './cache/AttendanceCache.route';
 
+// router for /attendance/
 const AttendanceRouter = Router();
 
+// link cache router
 AttendanceRouter.use('/cache', AttendanceCacheRouter);
 
+// get online mode
 AttendanceRouter.get('/online', async (req, res) => {
     res.status(200)
         .send({ online: attdManager.mode === 'ONLINE' })
         .end();
 });
 
+// push a single attendance entry
 AttendanceRouter.post('/push', async (req, res) => {
     const { studentId, dateTime } = req.body;
 

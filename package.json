@@ -9,7 +9,13 @@
     "scripts": {
         "start:frontend": "cd ./attendance-tracker-client && npm run start",
         "start:backend": "cd ./attendance-tracker-server && npm run start",
-        "start": "concurrently --names FRONT,BACK \"npm run start:frontend\" \"npm run start:backend\""
+        "start": "concurrently --names FRONT,BACK \"npm run start:frontend\" \"npm run start:backend\"",
+        "build:frontend": "cd ./attendance-tracker-client && npm run build",
+        "build:backend": "cd ./attendance-tracker-server && npm run build",
+        "build": "concurrently --names FRONT,BACK \"npm run build:frontend\" \"npm run build:backend\"",
+        "dev:frontend": "cd ./attendance-tracker-client && npm run dev",
+        "dev:backend": "cd ./attendance-tracker-server && npm run dev",
+        "dev": "concurrently --names FRONT,BACK \"npm run dev:frontend\" \"npm run dev:backend\""
     },
     "keywords": [],
     "author": "",

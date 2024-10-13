@@ -6,14 +6,18 @@ export interface NFCScannerProps {
     handleTagScan: (tag: string) => void;
 }
 
+// base nfc scanner, queries for a tag from the server and returns it in a callback
 export default function NFCScanner(props: NFCScannerProps) {
     const { setMessage } = useContext(GlobalMessageContext);
     useEffect(() => {
+        // reset listeners
         socket.removeAllListeners();
+        // run callback when a tag is received
         socket.on('tag', async (tag) => {
             console.log('Received tag, ', tag);
             await props.handleTagScan(tag);
         });
+        // notify if reader is offline
         socket.on('status', async (online) => {
             console.log(`Received Status, ${online}`);
             setMessage(online ? '' : 'WARNING: Scanner is offline!');
@@ -33,9 +37,6 @@ export default function NFCScanner(props: NFCScannerProps) {
         >
             <h1>Tap below to scan.</h1>
             <MdOutlinePageview color='black' size={64} />
-            {/* <Button onClick={() => props.handleTagScan('abcdefg')} variant='contained' style={{ width: '150px' }}>
-                Test Scan
-            </Button> */}
         </div>
     );
 }

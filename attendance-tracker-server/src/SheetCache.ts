@@ -35,9 +35,9 @@ export default class SheetCache {
         for (const datum of data) {
             this.cache[datum.row][datum.col] = datum.data.values[0][0];
         }
-        console.log(this.cache);
     }
 
+    // update a single cell; does not block as much as batchUpdateSingle
     public async updateSingle(data: { data: { range: string; values: any[][] }; row: number; col: number }) {
         await SheetInstance.spreadsheets.values.update({
             spreadsheetId: this.sheetId,

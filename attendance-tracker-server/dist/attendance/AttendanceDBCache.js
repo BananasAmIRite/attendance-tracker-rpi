@@ -57,5 +57,17 @@ class AttendanceDBCache {
             return yield PrismaClient_1.default.attendance.findMany();
         });
     }
+    // deletes all entries from cache that have ids in the provided array
+    removeAllIncluding(entriesToRemove) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield PrismaClient_1.default.attendance.deleteMany({
+                where: {
+                    id: {
+                        in: entriesToRemove,
+                    },
+                },
+            });
+        });
+    }
 }
 exports.default = AttendanceDBCache;

@@ -1,18 +1,19 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getBackOnline, isAttendanceOnline } from '../server/Attendance';
 import { isStudentInfoOnline } from '../server/Student';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import { ArrowBackIos } from '@mui/icons-material';
 import { useNavigate } from 'react-router';
-import { GlobalMessageContext } from '../App';
 import AttendanceCache from './cachescreen/AttendanceCache';
 import NFCUpdatesCache from './cachescreen/NFCUpdatesCache';
 import CachedStudentInfo from './cachescreen/CachedStudentInfo';
+import { LoadingButton } from '@mui/lab';
 
 export default function CacheScreen() {
     const [attendanceOnline, setAttendanceOnline] = useState(false);
     const [studentInfoOnline, setStudentInfoOnline] = useState(false);
+
+    const [statusReloadLoading, setStatusReloadLoading] = useState(false);
 
     const navigate = useNavigate();
 
@@ -24,7 +25,7 @@ export default function CacheScreen() {
         isAttendanceOnline().then(setAttendanceOnline, () => {});
         isStudentInfoOnline().then(setStudentInfoOnline, () => {});
 
-        console.log('reloading???');
+        console.log('reloading...');
     }, []);
 
     const onlineStatusText = (isOnline: boolean) => {
@@ -55,23 +56,24 @@ export default function CacheScreen() {
                             online.{' '}
                         </span>
                         <br />
-                        <span>Re-login to refresh status</span>
-                        <br />
                         <span>Attendance Online: {onlineStatusText(attendanceOnline)}</span>
                         <br />
                         <span>Student Info Online: {onlineStatusText(studentInfoOnline)}</span>
                         <br /> <br />
-                        <Button
+                        <LoadingButton
                             variant='contained'
+                            loading={statusReloadLoading}
                             onClick={() => {
+                                setStatusReloadLoading(true);
                                 getBackOnline().then(() => {
+                                    setStatusReloadLoading(false);
                                     forceUpdate();
                                     console.log('force updating');
                                 });
                             }}
                         >
                             Reload Status
-                        </Button>
+                        </LoadingButton>
                     </div>
                     <AttendanceCache />
                     <NFCUpdatesCache />

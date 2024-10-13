@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const AttendanceManager_1 = __importDefault(require("../../../attendance/AttendanceManager"));
+// router for /attendance/cache/
 const AttendanceCacheRouter = (0, express_1.Router)();
 AttendanceCacheRouter.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log('Getting attendance cache...');
@@ -22,8 +23,8 @@ AttendanceCacheRouter.get('/', (req, res) => __awaiter(void 0, void 0, void 0, f
 }));
 AttendanceCacheRouter.post('/flush', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     console.log('Flushing attendance...');
-    AttendanceManager_1.default
-        .flushCachedAttendance()
+    AttendanceManager_1.default.cacheFlusher
+        .flush()
         .then(() => {
         res.status(200).end();
     })

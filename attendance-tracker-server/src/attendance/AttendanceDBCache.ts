@@ -42,4 +42,15 @@ export default class AttendanceDBCache {
     public async getAllCacheEntries(): Promise<Attendance[]> {
         return await prisma.attendance.findMany();
     }
+
+    // deletes all entries from cache that have ids in the provided array
+    public async removeAllIncluding(entriesToRemove: number[]): Promise<void> {
+        await prisma.attendance.deleteMany({
+            where: {
+                id: {
+                    in: entriesToRemove,
+                },
+            },
+        });
+    }
 }
