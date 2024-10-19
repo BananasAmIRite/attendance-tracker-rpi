@@ -21,7 +21,7 @@ StudentInfoCacheRouter.get('/', (req, res) => __awaiter(void 0, void 0, void 0, 
     res.status(200).send(entries).end();
 }));
 StudentInfoCacheRouter.post('/rebuild', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('Clearing student info cache...');
+    console.log('Rebuilding student info cache...');
     yield StudentInfoManager_1.default.rebuildStudentInfoCache();
     res.status(200).end();
 }));

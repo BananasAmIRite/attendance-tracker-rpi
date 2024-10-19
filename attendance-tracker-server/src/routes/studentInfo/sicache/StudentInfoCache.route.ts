@@ -10,7 +10,7 @@ StudentInfoCacheRouter.get('/', async (req, res) => {
 });
 
 StudentInfoCacheRouter.post('/rebuild', async (req, res) => {
-    console.log('Clearing student info cache...');
+    console.log('Rebuilding student info cache...');
     await siManager.rebuildStudentInfoCache();
     res.status(200).end();
 });

@@ -37,7 +37,6 @@ class SheetCache {
                 requestBody: {
                     data: data.map((e) => e.data),
                     valueInputOption: 'RAW',
-                    includeValuesInResponse: true,
                 },
             });
             for (const datum of data) {
