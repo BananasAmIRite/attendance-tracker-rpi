@@ -21,8 +21,9 @@ sudo apt install npm
     - `pip install mfrc522`
     - Add the environment variable `PYTHON_PATH` to `attendance-tracker-server` as `path/to/env/bin/python`
 
-4. Install node dependencies for client and server by running `npm install` inside `attendance-tracker-rpi/attendance-tracker-server` and `attendance-tracker-rpi/attendance-tracker-client`
+4. Install node dependencies for client and server by running `npm install` inside `attendance-tracker-rpi/attendance-tracker-server`, `attendance-tracker-rpi/attendance-tracker-client`, and `attendance-tracker-rpi/`
 5. Navigate to `attendance-tracker-server` and run `npx prisma db push` to initialize the database
 6. Navigate to `attendance-tracker-server` and `attendance-tracker-client` and run `npm run build` (NOTE: if you don't have enough memory to build client, skip this step)
-7. Navigate to each folders and run `npm run start`
-8. Open a browser and go to `http://localhost:3000`
+7. Navigate to the root folder and run `npm install`
+8. Run `npm run start` in the root folder
+9. Open a browser and go to `http://localhost:3000`

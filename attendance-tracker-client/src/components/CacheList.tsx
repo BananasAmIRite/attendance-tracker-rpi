@@ -7,9 +7,12 @@ export interface CacheListProps<T> {
     style?: CSSProperties | undefined;
 }
 
+// element that displays a list of any object array
 export default function CacheList<T>(props: CacheListProps<T>) {
+    // cache of the data to be displayed
     const [cache, setCache] = useState<T[]>([]);
 
+    // retrieve the cache on start
     useEffect(() => {
         props.getCache().then(setCache);
     }, []);

@@ -12,6 +12,11 @@ export interface AttendanceEntry {
     time: string;
 }
 
+export interface NFCChanges {
+    studentId: string;
+    nfcId: string;
+}
+
 export interface DisplayedStudentInfo extends StudentInfo {
     scanTime: string;
 }

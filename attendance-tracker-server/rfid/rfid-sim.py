@@ -7,7 +7,7 @@ entry_var = StringVar()
 
 def submit():
     entry = entry_var.get()
-    print(entry, flush=True, end="")
+    print(f"ID:{entry}", flush=True, end="")
     entry_var.set("")
 
 
