@@ -108,9 +108,13 @@ class StudentInfoManager {
             // offline mode; get the cached student info and pick a student from that
             const cached = await this.infoDbCache.getCachedStudentInfo();
             for (const info of cached) {
-                if (qualifier(info)) return info;
+                if (qualifier(info)) {
+                    console.log(`Got student info: ${info.studentId}, ${info.firstName}, ${info.lastName}`);
+                    return info;
+                }
             }
         }
+        console.log('Student lookup failed. ');
 
         return null;
     }

@@ -83,6 +83,12 @@ app.get('/adminpanel/verify', (req, res) => __awaiter(void 0, void 0, void 0, fu
         .send(process.env.ADMIN_PANEL_PW === password)
         .end();
 }));
+app.get('/isScanOnly', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('Checking scan only: ' + process.env.SCAN_ONLY);
+    res.status(200)
+        .send(process.env.SCAN_ONLY === 'true')
+        .end();
+}));
 // error handling
 app.use(handleErrors);
 // start the server

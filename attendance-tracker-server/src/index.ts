@@ -79,6 +79,13 @@ app.get('/adminpanel/verify', async (req, res) => {
         .end();
 });
 
+app.get('/isScanOnly', async (req, res) => {
+    console.log('Checking scan only: ' + process.env.SCAN_ONLY);
+    res.status(200)
+        .send(process.env.SCAN_ONLY === 'true')
+        .end();
+});
+
 // error handling
 app.use(handleErrors);
 

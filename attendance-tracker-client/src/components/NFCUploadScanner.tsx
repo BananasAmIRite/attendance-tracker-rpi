@@ -6,7 +6,7 @@ import TextField from '@mui/material/TextField';
 import { MdOutlineCreditScore } from 'react-icons/md';
 import { LoadingButton } from '@mui/lab';
 import UploadIcon from '@mui/icons-material/Upload';
-import { queryPasswordCorrect } from '../server/Attendance';
+import { isScanOnly, queryPasswordCorrect } from '../server/Attendance';
 import { GlobalMessageContext } from '../App';
 
 export interface NFCUploadScannerProps {
@@ -65,8 +65,16 @@ export default function NFCUploadScanner(props: NFCUploadScannerProps) {
             // student lookup successful, proceed forward with scanning student in
             await handleScan(uid, studentInfo.studentId);
         } else {
-            // couldn't find student. create new profile
-            setUploadState('INPUT_ID');
+            // couldn't find student
+            if (!(await isScanOnly())) {
+                // we aren't in scan-only mode. create new profile
+                setUploadState('INPUT_ID');
+            } else {
+                // output a message saying that id is invalid
+                resetToScan();
+                setLastScannedNfcId(uid);
+                setMessage(`Invalid id detected. Ensure you're not holding multiple ids to the scanner. `);
+            }
         }
     };
 
