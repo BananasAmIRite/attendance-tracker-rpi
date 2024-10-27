@@ -10,6 +10,7 @@ import '@fontsource/roboto/700.css';
 import CacheScreen from './screens/CacheScreen';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import MessageSnackbar from './components/ErrorSnackbar';
+import AdminScanScreen from './screens/AdminScanScreen';
 
 axios.defaults.baseURL = process.env.REACT_APP_BACKEND_URL;
 
@@ -51,6 +52,7 @@ function App() {
                     <Routes>
                         <Route path='/' element={<UserScanScreen />} />
                         <Route path='/supersecretscreen' element={<CacheScreen />} />
+                        <Route path='/adminscanscreen' element={<AdminScanScreen />} />
                     </Routes>
                 </BrowserRouter>
             </GlobalMessageContext.Provider>

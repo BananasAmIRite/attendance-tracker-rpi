@@ -8,6 +8,7 @@ import AttendanceCache from './cachescreen/AttendanceCache';
 import NFCUpdatesCache from './cachescreen/NFCUpdatesCache';
 import CachedStudentInfo from './cachescreen/CachedStudentInfo';
 import { LoadingButton } from '@mui/lab';
+import { Button } from '@mui/material';
 
 export default function CacheScreen() {
     const [attendanceOnline, setAttendanceOnline] = useState(false);
@@ -74,6 +75,16 @@ export default function CacheScreen() {
                         >
                             Reload Status
                         </LoadingButton>
+                        <br />
+                        <br />
+                        <Button
+                            variant='contained'
+                            onClick={() => {
+                                navigate('/adminscanscreen');
+                            }}
+                        >
+                            Register New IDs
+                        </Button>
                     </div>
                     <AttendanceCache />
                     <NFCUpdatesCache />

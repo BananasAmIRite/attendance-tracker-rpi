@@ -9,8 +9,15 @@ import UploadIcon from '@mui/icons-material/Upload';
 import { isScanOnly, queryPasswordCorrect } from '../server/Attendance';
 import { GlobalMessageContext } from '../App';
 
+export interface HandleScanInformation {
+    id: string;
+    nfcId: string;
+    source: 'TAG' | 'BIND';
+}
+
 export interface NFCUploadScannerProps {
-    handleCodeScan: (res: string) => Promise<boolean>;
+    handleCodeScan: (res: HandleScanInformation) => Promise<boolean>;
+    scanOnly: boolean;
 }
 
 /**
@@ -63,10 +70,10 @@ export default function NFCUploadScanner(props: NFCUploadScannerProps) {
         if (studentInfo) {
             console.log('handling upload...');
             // student lookup successful, proceed forward with scanning student in
-            await handleScan(uid, studentInfo.studentId);
+            await handleScan({ id: studentInfo.studentId, source: 'TAG', nfcId: uid });
         } else {
             // couldn't find student
-            if (!(await isScanOnly())) {
+            if (!props.scanOnly) {
                 // we aren't in scan-only mode. create new profile
                 setUploadState('INPUT_ID');
             } else {
@@ -95,16 +102,16 @@ export default function NFCUploadScanner(props: NFCUploadScannerProps) {
         } else {
             // all good, bind student id to the nfc id and proceed with scanning student in
             await bindStudentId(stdId, nfcId);
-            await handleScan(nfcId, stdId);
+            await handleScan({ id: stdId, source: 'BIND', nfcId });
         }
 
         setNfcBindLoading(false);
     };
 
     // wrapper for handling scan to set the last scanned id if the next part of scanning is successful
-    const handleScan = async (nfcId: string, id: string) => {
-        const scanSuccessful = await props.handleCodeScan(id);
-        if (scanSuccessful) setLastScannedNfcId(nfcId);
+    const handleScan = async (info: HandleScanInformation) => {
+        const scanSuccessful = await props.handleCodeScan(info);
+        if (scanSuccessful) setLastScannedNfcId(info.nfcId);
         resetToScan();
     };
 

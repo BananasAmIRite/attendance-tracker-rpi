@@ -39,7 +39,7 @@ export default function UserScanScreen() {
         setMessage(err);
     };
 
-    const handleCodeScan = (id: string) =>
+    const handleCodeScan = ({ id }: { id: string }) =>
         new Promise<boolean>(async (res) => {
             console.log('handling code: ' + id);
 
@@ -98,7 +98,7 @@ export default function UserScanScreen() {
     return (
         <div style={{ width: '100%', height: '100%' }}>
             <div style={{ position: 'absolute', zIndex: '0', width: '100%', height: '100%' }}>
-                <NFCUploadScanner handleCodeScan={handleCodeScan} />
+                <NFCUploadScanner handleCodeScan={handleCodeScan} scanOnly={true} />
             </div>
             {displayUser === 'LOADING' ? (
                 <div
