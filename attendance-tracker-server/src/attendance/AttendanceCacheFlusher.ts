@@ -1,5 +1,6 @@
 import { SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
 import { AttendanceManager } from './AttendanceManager';
+import scheduler from '../TaskScheduler';
 
 // parse the auto upload attendnace string into a runnable method to determine if we should upload or not
 const parseAutoUploadCriteria = (criteria: string): ((mgr: AttendanceManager) => Promise<boolean>) => {
@@ -36,7 +37,7 @@ export default class AttendanceCacheFlusher {
     private isFlushing: boolean = false;
 
     // scheduler for automatic flushing
-    private attdUploadScheduler: ToadScheduler = new ToadScheduler();
+    private attdUploadScheduler: ToadScheduler = scheduler;
 
     public constructor(private attdMgr: AttendanceManager) {}
 

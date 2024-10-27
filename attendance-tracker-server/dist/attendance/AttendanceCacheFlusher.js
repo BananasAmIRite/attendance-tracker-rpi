@@ -8,8 +8,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const toad_scheduler_1 = require("toad-scheduler");
+const TaskScheduler_1 = __importDefault(require("../TaskScheduler"));
 // parse the auto upload attendnace string into a runnable method to determine if we should upload or not
 const parseAutoUploadCriteria = (criteria) => {
     // parse data by separation
@@ -43,7 +47,7 @@ class AttendanceCacheFlusher {
         // whether or not we're already currently flushing (we don't wanna send multiple requests)
         this.isFlushing = false;
         // scheduler for automatic flushing
-        this.attdUploadScheduler = new toad_scheduler_1.ToadScheduler();
+        this.attdUploadScheduler = TaskScheduler_1.default;
     }
     // start flushing attendance automatically
     startAutomaticFlush() {

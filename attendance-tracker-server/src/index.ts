@@ -10,6 +10,8 @@ import { resolve } from 'dns/promises';
 import siManager from './studentinfo/StudentInfoManager';
 import StudentInfoRouter from './routes/studentInfo/StudentInfo.route';
 import AttendanceRouter from './routes/attendance/Attendance.route';
+import scheduler from './TaskScheduler';
+import { SimpleIntervalJob, Task } from 'toad-scheduler';
 
 // ---- WEB APP ----
 
@@ -105,6 +107,20 @@ rfidProcess.stdout.on('data', (data) => {
     if (type === 'ID') socketIO.emit('tag', value);
     console.log('RFID Data received: ', data.toString());
 });
+
+scheduler.addSimpleIntervalJob(
+    new SimpleIntervalJob(
+        { seconds: 60 * 10 },
+        new Task('online-check', async () => {
+            try {
+                console.log('Checking online...');
+                await checkOnline();
+            } catch (err) {
+                console.log('Error checking online:', err);
+            }
+        })
+    )
+);
 
 // set up online stuff if we're online
 checkOnline();

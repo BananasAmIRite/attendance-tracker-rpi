@@ -24,6 +24,8 @@ const promises_1 = require("dns/promises");
 const StudentInfoManager_1 = __importDefault(require("./studentinfo/StudentInfoManager"));
 const StudentInfo_route_1 = __importDefault(require("./routes/studentInfo/StudentInfo.route"));
 const Attendance_route_1 = __importDefault(require("./routes/attendance/Attendance.route"));
+const TaskScheduler_1 = __importDefault(require("./TaskScheduler"));
+const toad_scheduler_1 = require("toad-scheduler");
 // ---- WEB APP ----
 // set up web app and websocket
 const app = (0, express_1.default)();
@@ -107,5 +109,14 @@ rfidProcess.stdout.on('data', (data) => {
         socketIO.emit('tag', value);
     console.log('RFID Data received: ', data.toString());
 });
+TaskScheduler_1.default.addSimpleIntervalJob(new toad_scheduler_1.SimpleIntervalJob({ seconds: 60 * 10 }, new toad_scheduler_1.Task('online-check', () => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log('Checking online...');
+        yield checkOnline();
+    }
+    catch (err) {
+        console.log('Error checking online:', err);
+    }
+}))));
 // set up online stuff if we're online
 checkOnline();
