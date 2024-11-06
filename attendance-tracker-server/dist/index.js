@@ -36,7 +36,10 @@ const socketIO = new socket_io_1.Server(server, {
     },
 });
 socketIO.on('connection', (socket) => {
-    console.log('socket connection established');
+    console.log(`socket connection established: ${socket.id}`);
+    socket.on('disconnect', () => {
+        console.log(`socket disconnected: ${socket.id}`);
+    });
 });
 // allow any origin to request data
 app.use((0, cors_1.default)({
