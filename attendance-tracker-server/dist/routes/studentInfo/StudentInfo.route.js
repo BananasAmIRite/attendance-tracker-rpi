@@ -46,10 +46,14 @@ StudentInfoRouter.post('/bind', (req, res) => __awaiter(void 0, void 0, void 0, 
         res.status(401).end();
     }
 }));
-StudentInfoRouter.get('/load', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+StudentInfoRouter.get('/load', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     console.log('Loading student info...');
-    yield StudentInfoManager_1.default.reconcileStudentInfoCache();
-    res.status(200).end();
+    StudentInfoManager_1.default
+        .reconcileStudentInfoCache()
+        .then(() => {
+        res.status(200).end();
+    })
+        .catch(next);
 }));
 StudentInfoRouter.get('/online', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.status(200)

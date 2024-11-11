@@ -9,10 +9,14 @@ StudentInfoCacheRouter.get('/', async (req, res) => {
     res.status(200).send(entries).end();
 });
 
-StudentInfoCacheRouter.post('/rebuild', async (req, res) => {
+StudentInfoCacheRouter.post('/rebuild', async (req, res, next) => {
     console.log('Rebuilding student info cache...');
-    await siManager.rebuildStudentInfoCache();
-    res.status(200).end();
+    siManager
+        .rebuildStudentInfoCache()
+        .then(() => {
+            res.status(200).end();
+        })
+        .catch(next);
 });
 
 export default StudentInfoCacheRouter;

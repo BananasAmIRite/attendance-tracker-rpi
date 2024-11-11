@@ -123,7 +123,6 @@ class StudentInfoManager {
     public async reconcileStudentInfoCache() {
         try {
             console.log(`Reconciling student infos...`);
-            if (this.mode !== 'ONLINE') return;
             const currentCache = await prisma.studentInformation.findMany();
             // rebuild cache
             await this.rebuildStudentInfoCache();
@@ -153,14 +152,12 @@ class StudentInfoManager {
         } catch (err) {
             console.log("Couldn't reconcile student infos");
             this.mode = 'OFFLINE';
-            return;
+            throw err;
         }
     }
 
     // fully rebuild student info cache from the Sheets
     public async rebuildStudentInfoCache() {
-        if (this.mode !== 'ONLINE') return;
-
         // retrieve all values from sheets
         let response;
         try {
@@ -172,7 +169,7 @@ class StudentInfoManager {
         } catch (err) {
             console.log("Couldn't load all student info for rebuilding");
             this.mode = 'OFFLINE';
-            return;
+            throw err;
         }
 
         const values = response.data.values;
@@ -195,6 +192,7 @@ class StudentInfoManager {
             console.log('Rebuilt all student info cache');
         } catch (err) {
             console.log(`Error rebuilding student info cache: ${err}`);
+            throw err;
         }
     }
 

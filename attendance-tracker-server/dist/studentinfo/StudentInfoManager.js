@@ -122,8 +122,6 @@ class StudentInfoManager {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 console.log(`Reconciling student infos...`);
-                if (this.mode !== 'ONLINE')
-                    return;
                 const currentCache = yield PrismaClient_1.default.studentInformation.findMany();
                 // rebuild cache
                 yield this.rebuildStudentInfoCache();
@@ -153,15 +151,13 @@ class StudentInfoManager {
             catch (err) {
                 console.log("Couldn't reconcile student infos");
                 this.mode = 'OFFLINE';
-                return;
+                throw err;
             }
         });
     }
     // fully rebuild student info cache from the Sheets
     rebuildStudentInfoCache() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.mode !== 'ONLINE')
-                return;
             // retrieve all values from sheets
             let response;
             try {
@@ -174,7 +170,7 @@ class StudentInfoManager {
             catch (err) {
                 console.log("Couldn't load all student info for rebuilding");
                 this.mode = 'OFFLINE';
-                return;
+                throw err;
             }
             const values = response.data.values;
             console.log('Deleting all student info cache...');
@@ -191,6 +187,7 @@ class StudentInfoManager {
             }
             catch (err) {
                 console.log(`Error rebuilding student info cache: ${err}`);
+                throw err;
             }
         });
     }

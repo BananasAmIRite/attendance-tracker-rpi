@@ -50,16 +50,19 @@ app.use(body_parser_1.default.json());
 const checkOnline = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // if we can resolve google.com then we're online
-        yield (0, promises_1.resolve)('www.google.com');
+        console.log('resolving google...');
+        yield (0, promises_1.lookup)('www.google.com');
         AttendanceManager_1.default.mode = 'ONLINE';
         StudentInfoManager_1.default.mode = 'ONLINE';
         // set up online stuff
+        console.log('Initializing web services...');
         yield (0, ServiceAccount_1.initJWT)();
         yield AttendanceManager_1.default.loadSheetCache();
     }
     catch (err) {
         AttendanceManager_1.default.mode = 'OFFLINE';
         StudentInfoManager_1.default.mode = 'OFFLINE';
+        throw err;
     }
 });
 // routes
@@ -75,7 +78,7 @@ const handleErrors = (err, req, res, next) => {
 };
 // get back online by resolving a common address
 app.post('/getBackOnline', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield checkOnline();
+    yield checkOnlineWithCatch();
     res.status(200).end();
 }));
 // verify admin panel password
@@ -86,12 +89,6 @@ app.get('/adminpanel/verify', (req, res) => __awaiter(void 0, void 0, void 0, fu
     // send back whether or not the pw is correct
     res.status(200)
         .send(process.env.ADMIN_PANEL_PW === password)
-        .end();
-}));
-app.get('/isScanOnly', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('Checking scan only: ' + process.env.SCAN_ONLY);
-    res.status(200)
-        .send(process.env.SCAN_ONLY === 'true')
         .end();
 }));
 // error handling
@@ -112,7 +109,7 @@ rfidProcess.stdout.on('data', (data) => {
         socketIO.emit('tag', value);
     console.log('RFID Data received: ', data.toString());
 });
-TaskScheduler_1.default.addSimpleIntervalJob(new toad_scheduler_1.SimpleIntervalJob({ seconds: 60 * 10 }, new toad_scheduler_1.Task('online-check', () => __awaiter(void 0, void 0, void 0, function* () {
+const checkOnlineWithCatch = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         console.log('Checking online...');
         yield checkOnline();
@@ -120,6 +117,7 @@ TaskScheduler_1.default.addSimpleIntervalJob(new toad_scheduler_1.SimpleInterval
     catch (err) {
         console.log('Error checking online:', err);
     }
-}))));
-// set up online stuff if we're online
-checkOnline();
+});
+// periodically check if we're online
+TaskScheduler_1.default.addSimpleIntervalJob(new toad_scheduler_1.SimpleIntervalJob({ seconds: 60 * 15 }, new toad_scheduler_1.Task('online-check', checkOnlineWithCatch)));
+checkOnlineWithCatch();

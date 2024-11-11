@@ -43,10 +43,14 @@ StudentInfoRouter.post('/bind', async (req, res) => {
     }
 });
 
-StudentInfoRouter.get('/load', async (req, res) => {
+StudentInfoRouter.get('/load', async (req, res, next) => {
     console.log('Loading student info...');
-    await siManager.reconcileStudentInfoCache();
-    res.status(200).end();
+    siManager
+        .reconcileStudentInfoCache()
+        .then(() => {
+            res.status(200).end();
+        })
+        .catch(next);
 });
 
 StudentInfoRouter.get('/online', async (req, res) => {

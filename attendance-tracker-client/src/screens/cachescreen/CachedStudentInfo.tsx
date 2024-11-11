@@ -62,7 +62,7 @@ export default function CachedStudentInfo() {
                                     setMessage('Reconciled student info successfully!');
                                     forceUpdate();
                                 },
-                                () => {}
+                                (err) => {}
                             )
                             .finally(() => setReloadInfoLoading(false));
                     }}

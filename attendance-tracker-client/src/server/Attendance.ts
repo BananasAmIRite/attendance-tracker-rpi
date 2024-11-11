@@ -37,7 +37,3 @@ export const queryPasswordCorrect = async (password: string) => {
         })
     ).data;
 };
-
-export const isScanOnly = async () => {
-    return (await axios.get<boolean>('/isScanOnly')).data;
-};

@@ -6,7 +6,7 @@ import TextField from '@mui/material/TextField';
 import { MdOutlineCreditScore } from 'react-icons/md';
 import { LoadingButton } from '@mui/lab';
 import UploadIcon from '@mui/icons-material/Upload';
-import { isScanOnly, queryPasswordCorrect } from '../server/Attendance';
+import { queryPasswordCorrect } from '../server/Attendance';
 import { GlobalMessageContext } from '../App';
 
 export interface HandleScanInformation {
@@ -140,15 +140,28 @@ export default function NFCUploadScanner(props: NFCUploadScannerProps) {
                 autoComplete='off'
             />
             <br />
-            <LoadingButton
-                loading={nfcBindLoading}
-                loadingPosition='start'
-                startIcon={<UploadIcon />}
-                onClick={() => handleCode()}
-                variant='contained'
+            <div
+                style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'space-evenly',
+                    marginTop: '1%',
+                    width: '50%',
+                }}
             >
-                Submit
-            </LoadingButton>
+                <Button variant='contained' onClick={resetToScan}>
+                    Cancel
+                </Button>
+                <LoadingButton
+                    loading={nfcBindLoading}
+                    loadingPosition='start'
+                    startIcon={<UploadIcon />}
+                    onClick={() => handleCode()}
+                    variant='contained'
+                >
+                    Submit
+                </LoadingButton>
+            </div>
         </div>
     ) : uploadState === 'INPUT_FAILURE' ? (
         <div
@@ -191,7 +204,9 @@ export default function NFCUploadScanner(props: NFCUploadScannerProps) {
                 alignItems: 'center',
             }}
         >
-            <h1>Overwriting existing tag... Please enter the admin password</h1>
+            <h1>
+                Overwriting existing tag... <br /> Please enter the admin password
+            </h1>
             <TextField
                 style={{ width: '50%' }}
                 label='Password'
@@ -206,7 +221,7 @@ export default function NFCUploadScanner(props: NFCUploadScannerProps) {
                     display: 'flex',
                     flexDirection: 'row',
                     justifyContent: 'space-evenly',
-                    marginTop: '5%',
+                    marginTop: '1%',
                     width: '50%',
                 }}
             >

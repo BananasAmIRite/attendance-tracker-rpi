@@ -20,9 +20,13 @@ StudentInfoCacheRouter.get('/', (req, res) => __awaiter(void 0, void 0, void 0, 
     const entries = yield StudentInfoManager_1.default.infoDbCache.getCachedStudentInfo();
     res.status(200).send(entries).end();
 }));
-StudentInfoCacheRouter.post('/rebuild', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+StudentInfoCacheRouter.post('/rebuild', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     console.log('Rebuilding student info cache...');
-    yield StudentInfoManager_1.default.rebuildStudentInfoCache();
-    res.status(200).end();
+    StudentInfoManager_1.default
+        .rebuildStudentInfoCache()
+        .then(() => {
+        res.status(200).end();
+    })
+        .catch(next);
 }));
 exports.default = StudentInfoCacheRouter;

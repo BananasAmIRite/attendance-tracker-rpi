@@ -8,11 +8,11 @@ import AttendanceCache from './cachescreen/AttendanceCache';
 import NFCUpdatesCache from './cachescreen/NFCUpdatesCache';
 import CachedStudentInfo from './cachescreen/CachedStudentInfo';
 import { LoadingButton } from '@mui/lab';
-import { Button } from '@mui/material';
+import { Button, CircularProgress } from '@mui/material';
 
 export default function CacheScreen() {
-    const [attendanceOnline, setAttendanceOnline] = useState(false);
-    const [studentInfoOnline, setStudentInfoOnline] = useState(false);
+    const [attendanceOnline, setAttendanceOnline] = useState<boolean | 'LOADING'>('LOADING');
+    const [studentInfoOnline, setStudentInfoOnline] = useState<boolean | 'LOADING'>('LOADING');
 
     const [statusReloadLoading, setStatusReloadLoading] = useState(false);
 
@@ -29,8 +29,10 @@ export default function CacheScreen() {
         console.log('reloading...');
     }, []);
 
-    const onlineStatusText = (isOnline: boolean) => {
-        return isOnline ? (
+    const onlineStatusText = (isOnline: boolean | 'LOADING') => {
+        return isOnline === 'LOADING' ? (
+            <CircularProgress color='primary' size={12} />
+        ) : isOnline ? (
             <span style={{ color: 'green' }}>Online</span>
         ) : (
             <span style={{ color: 'red' }}>Offline</span>
