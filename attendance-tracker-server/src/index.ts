@@ -6,10 +6,12 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { spawn } from 'child_process';
 import { initJWT } from './ServiceAccount';
-import { resolve } from 'dns/promises';
+import { lookup } from 'dns/promises';
 import siManager from './studentinfo/StudentInfoManager';
 import StudentInfoRouter from './routes/studentInfo/StudentInfo.route';
 import AttendanceRouter from './routes/attendance/Attendance.route';
+import scheduler from './TaskScheduler';
+import { SimpleIntervalJob, Task } from 'toad-scheduler';
 
 // ---- WEB APP ----
 
@@ -40,15 +42,18 @@ app.use(bodyParser.json());
 const checkOnline = async () => {
     try {
         // if we can resolve google.com then we're online
-        await resolve('www.google.com');
+        console.log('resolving google...');
+        await lookup('www.google.com');
         attdManager.mode = 'ONLINE';
         siManager.mode = 'ONLINE';
         // set up online stuff
+        console.log('Initializing web services...');
         await initJWT();
         await attdManager.loadSheetCache();
     } catch (err) {
         attdManager.mode = 'OFFLINE';
         siManager.mode = 'OFFLINE';
+        throw err;
     }
 };
 
@@ -67,7 +72,7 @@ const handleErrors = (err: any, req: Request, res: Response, next: (err: any) =>
 
 // get back online by resolving a common address
 app.post('/getBackOnline', async (req, res) => {
-    await checkOnline();
+    await checkOnlineWithCatch();
     res.status(200).end();
 });
 
@@ -79,13 +84,6 @@ app.get('/adminpanel/verify', async (req, res) => {
     // send back whether or not the pw is correct
     res.status(200)
         .send(process.env.ADMIN_PANEL_PW === password)
-        .end();
-});
-
-app.get('/isScanOnly', async (req, res) => {
-    console.log('Checking scan only: ' + process.env.SCAN_ONLY);
-    res.status(200)
-        .send(process.env.SCAN_ONLY === 'true')
         .end();
 });
 
@@ -109,5 +107,18 @@ rfidProcess.stdout.on('data', (data) => {
     console.log('RFID Data received: ', data.toString());
 });
 
-// set up online stuff if we're online
-checkOnline();
+const checkOnlineWithCatch = async () => {
+    try {
+        console.log('Checking online...');
+        await checkOnline();
+    } catch (err) {
+        console.log('Error checking online:', err);
+    }
+};
+
+// periodically check if we're online
+scheduler.addSimpleIntervalJob(
+    new SimpleIntervalJob({ seconds: 60 * 15 }, new Task('online-check', checkOnlineWithCatch))
+);
+
+checkOnlineWithCatch();

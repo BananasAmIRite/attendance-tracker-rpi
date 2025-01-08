@@ -23,5 +23,6 @@ const initJWT = () => __awaiter(void 0, void 0, void 0, function* () {
         scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
     exports.SheetInstance = (0, sheets_1.sheets)({ version: 'v4', auth: exports.serviceAccountAuth });
+    console.log('Loaded SheetInstance');
 });
 exports.initJWT = initJWT;

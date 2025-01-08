@@ -15,4 +15,5 @@ export const initJWT = async () => {
         scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
     SheetInstance = sheets({ version: 'v4', auth: serviceAccountAuth });
+    console.log('Loaded SheetInstance');
 };

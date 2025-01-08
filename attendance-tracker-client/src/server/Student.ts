@@ -39,6 +39,7 @@ export async function bindStudentId(sid: string, nfcId: string): Promise<void> {
         nfcId,
     });
 }
+
 export const isStudentInfoOnline = async () => {
     return (await axios.get<{ online: boolean }>('/studentInfo/online')).data.online;
 };
