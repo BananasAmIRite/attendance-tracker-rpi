@@ -43,10 +43,11 @@ class AttendanceManager {
     // load in-memory cache of the attendance sheet
     loadSheetCache() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.inSheetCache = new SheetCache_1.default(this.sheetId, this.inSheetRange);
+            const newCache = new SheetCache_1.default(this.sheetId, this.inSheetRange);
             console.log('Getting attendance sheet data');
-            yield this.inSheetCache.load();
+            yield newCache.load();
             console.log('Retrieved attendance sheet data. ');
+            this.inSheetCache = newCache;
         });
     }
     // post attendance entry for a specific student to either sheets or attendance db based on mode
@@ -104,7 +105,7 @@ class AttendanceManager {
             for (const entry of entries) {
                 const row = students.findIndex((e) => e === entry.studentId);
                 const col = dateIndexMap.find((e) => e.date === entry.date).index;
-                if (col === -1)
+                if (col === -1 || row === -1)
                     continue; // date not found, don't upload value and append to the values that errored
                 // use the scan out sheet if I already scanned in or there's already a value for scanning in
                 const sheetRange = attdSheetData[row][col] || rangesToQuery.findIndex((e) => e.row === row && e.col === col) !== -1

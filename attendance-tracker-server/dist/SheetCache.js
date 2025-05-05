@@ -26,6 +26,7 @@ class SheetCache {
             })).data.values;
             if (!data)
                 throw new Error('Error when loading sheets cache');
+            console.log(data[0]);
             this.cache = data;
         });
     }
